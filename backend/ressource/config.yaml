@@ -1,0 +1,9 @@
+default_nb_profils: '10'
+delta_1: 240
+delta_2: 360
+delta_3: 480
+densite: 7850
+e: 200000
+fu: 450
+fy: 350
+phi: 0.9
