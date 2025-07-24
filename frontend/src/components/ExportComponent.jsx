@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, TextField, Typography, Divider, Box } from '@mui/material';
 import * as XLSX from 'xlsx';
-import FileDownloadIcon from '@mui/icons-material/FileDownload'; // Pour l'icône d'export
+import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
 import { ProjectContext } from '../App';
 
 export default function ExportComponent({ columns = [], rows = [], defaultFileName = "export.xlsx" }) {
