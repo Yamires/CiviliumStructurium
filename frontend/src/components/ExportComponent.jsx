@@ -1,28 +1,17 @@
-import React, { useState, useContext} from 'react';
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  TextField,
-  Typography,
-  Divider,
-  Box,
-} from '@mui/material';
+import React, { useState, useContext, useEffect } from 'react';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, TextField, Typography, Divider, Box } from '@mui/material';
 import * as XLSX from 'xlsx';
+import FileDownloadIcon from '@mui/icons-material/FileDownload'; // Pour l'icône d'export
 import { ProjectContext } from '../App';
 
-export default function ExportComponent({columns = [], rows = [], defaultFileName = "export.xlsx", open, onClose}) {
+export default function ExportComponent({ columns = [], rows = [], defaultFileName = "export.xlsx" }) {
+  const [open, setOpen] = useState(false);
   const [fileName, setFileName] = useState(defaultFileName);
   const [selectedCols, setSelectedCols] = useState(columns.filter(col => col.field !== 'actions').map(col => col.field));
-  const {selectedProjectId, setSelectedProjectId, projectData} = useContext(ProjectContext);
+  const { projectData } = useContext(ProjectContext);
 
   useEffect(() => {
-    if(open) setFileName(defaultFileName);
+    if (open) setFileName(defaultFileName);
   }, [open, defaultFileName]);
 
   const handleColChange = (field) => {
@@ -45,13 +34,12 @@ export default function ExportComponent({columns = [], rows = [], defaultFileNam
         ])
       )
     );
-
     const projectHeaderRows = [
       { [exportCols[0]?.headerName || exportCols[0]?.field || ""]: `Projet : ${projectData.nom_projet ?? ""}` },
       { [exportCols[0]?.headerName || exportCols[0]?.field || ""]: `Description : ${projectData.description ?? ""}` },
       { [exportCols[0]?.headerName || exportCols[0]?.field || ""]: `Date : ${projectData.date ?? ""}` },
       { [exportCols[0]?.headerName || exportCols[0]?.field || ""]: `Préparé par : ${projectData.prepare_par ?? ""}` },
-      {}, 
+      {},
     ];
 
     const worksheet = XLSX.utils.json_to_sheet(
@@ -66,8 +54,14 @@ export default function ExportComponent({columns = [], rows = [], defaultFileNam
     setOpen(false);
   };
 
-  return (    
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+  return (
+    <>
+      <Button 
+        startIcon={<FileDownloadIcon />} 
+        onClick={() => setOpen(true)}
+      />
+    
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Exporter les données du projet</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2 }}>
@@ -111,5 +105,7 @@ export default function ExportComponent({columns = [], rows = [], defaultFileNam
           </Button>
         </DialogActions>
       </Dialog>
+    </>
   );
 }
+

@@ -158,6 +158,23 @@ def add_user(username, email=None):
         return user_id
     
 
+def get_user_by_email(email):
+    with connect() as conn, conn.cursor() as cur: 
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        row = cur.fetchone()
+        if row: 
+            cols = [desc[0] for desc in cur.description]
+            return dict(zip(cols, row))
+        return None
+
+def add_user_by_email(username, email):
+    with connect() as conn, conn.cursor() as cur: 
+        cur.execute("INSERT INTO users (username, email) VALUES ( %s, %s) RETURNING id_user",
+                    (username, email))
+        user_id = cur.fetchone()[0]
+        conn.commit()
+        return user_id
+
 def update_project(id_project, nom_projet, description, date, prepare_par):
     try:
         with connect() as conn, conn.cursor() as cur:

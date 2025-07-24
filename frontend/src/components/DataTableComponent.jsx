@@ -10,9 +10,8 @@ import {defaultColumns, flattenProfil, autoColumns} from '../helpers/profilsTabl
 import ExportComponent from './ExportComponent';
 import IosShareIcon from '@mui/icons-material/IosShare';
 
-export default function DataTableComponent() {
-  const [rows, setRows] = useState([]);
-  const [columns, setColumns] = useState(defaultColumns);
+export default function DataTableComponent({columns, setColumns, rows, setRows}) {
+
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
   const {selectedProjectId, setSelectedProjectId, projectData} = useContext(ProjectContext);
   const {updateProfils, setUpdateProfils} = useContext(ProfilUpdateContext)
@@ -67,19 +66,6 @@ export default function DataTableComponent() {
     }
   };
 
-  function CustomToolbar({columns, rows, defaultFileName}) {
-    const [openExport, SetOpenExport] = useState(false);
-    return (
-     <Box sx={{p: 1, display: 'flex', alignItems:'center'}}>
-      <Button variant="outlined" size = "small" startIcon={<IosShareIcon/>} onClick={() => SetOpenExport(true)}>
-        Exporter
-      </Button>
-      <ExportComponent columns={columns} rows={rows} defaultFileName={defaultFileName} open={openExport} onClose={() => SetOpenExport(false)}/>
-     </Box>
-    )
-  }
-
-  console.log("update", updateProfils)
 
   useEffect(() => { 
     async function fetchProfils() { 

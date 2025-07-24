@@ -3,11 +3,12 @@ import yaml
 from flask_cors import CORS
 from solver import solve
 from filtrage import filter_sections
-from db import add_profil, get_all_profils, update_profil, delete_profil_db, get_projects_route, get_user, add_user, update_project, delete_project
+from db import add_profil, get_all_profils, update_profil, delete_profil_db, get_projects_route, get_user, add_user, update_project, delete_project, get_user_by_email, add_user_by_email
 from db import add_project
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:4173"}})
+
 
 
 # TEMPLATES
@@ -58,6 +59,21 @@ def signup():
         return jsonify({"error":"Déjà inscrit"}), 409
     user_id = add_user(username, email)
     return jsonify({"id_user":user_id, "username": username})
+
+@app.route('/api/users/sync', methods=['POST'])
+def sync_user():
+    data = request.get_json()
+    email = data.get('email')
+    username = data.get('name')
+    if not email: 
+        return jsonify({"error": "Email requis"}), 400
+    
+    user = get_user_by_email(email)
+    if not user: 
+        id_user = add_user_by_email(username, email)
+        return jsonify({"id_user": id_user, "username": username, "email": email})
+    return jsonify({"id_user": user['id_user'], "username": user['username'], "email": user['email']})
+
 
 # PROJETS
 

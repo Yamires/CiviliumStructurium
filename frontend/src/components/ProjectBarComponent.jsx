@@ -16,30 +16,33 @@ function makeFields(project, selectedProjectId, user) {
 
 export default function ProjectBarComponent() {
     const { selectedProjectId, projectData, setProjectData } = useContext(ProjectContext);
-    const { user } = useContext(AuthContext);
+    const { user, idUser } = useContext(AuthContext);
     const {triggerUpdate} = useContext(ProjectUpdateContext)
     const [message, setMessage] = useState("");
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!selectedProjectId || !user) return;
-        fetchProjects(user.id_user)
+        if (!selectedProjectId || !idUser) return;
+        fetchProjects(idUser)
             .then(data => {
-                const project = data.find(p => Number(p.id_project) === Number(selectedProjectId) || null);
+                const project = data.find(p => Number(p.id_project) === Number(selectedProjectId));
                 setProjectData(makeFields(project, selectedProjectId, user))
+                console.log("projectData:", projectData);
             })
             .catch(err => setError(err.message))
-    }, [selectedProjectId, user, setProjectData]);
+    }, [selectedProjectId, idUser, setProjectData]);
 
     const handleFieldChange = e => {
         const { name, value } = e.target;
         setProjectData(f => ({ ...f, [name]: value }));
+        console.log("projectData:", projectData);
     };
 
     const handleSave = async () => {
         setMessage("");
         try {
             await updateProject(projectData, selectedProjectId)
+            console.log("projectData:", projectData);
             setMessage("Projet enregistré !");
             triggerUpdate();
         } catch (err) {
