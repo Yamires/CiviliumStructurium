@@ -4,11 +4,13 @@ import {Box, Drawer, List, ListItem, ListItemButton, ListItemText, IconButton, T
 import MenuIcon from '@mui/icons-material/Menu';
 import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects} from '../api/projectApi';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { deleteProject } from '../api/projectApi';
 
 export default function ProjectBrowser() {
   const {user, idUser} = useContext(AuthContext);
   const {selectedProjectId, setSelectedProjectId} = useContext(ProjectContext);
-  const {updateCounter, setUpdateCounter} = useContext(ProjectUpdateContext);
+  const {updateCounter, triggerUpdate} = useContext(ProjectUpdateContext);
   const [projects, setProjects] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [error, setError] = useState(false)
@@ -42,6 +44,19 @@ export default function ProjectBrowser() {
     handleDrawerClose();
   };
 
+
+  const handleDetete = async (id) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return; 
+    try {
+        await deleteProject(id);
+        triggerUpdate();
+    } catch(err) {
+        setError(err.message);
+    }
+  }
+
+
+
   const currentProject = projects.find(proj => proj.id_project === selectedProjectId);
 
   return (
@@ -67,7 +82,12 @@ export default function ProjectBrowser() {
               )}
 
               {projects.map(proj => (
-                <ListItem key={proj.id_project} disablePadding selected={selectedProjectId === proj.id_project}>
+                <ListItem key={proj.id_project} disablePadding selected={selectedProjectId === proj.id_project}
+                secondaryAction={
+                        <Button onClick= {() => handleDetete(proj.id_project)} color="error" size="small" sx={{minWidth:0, ml: 1 }}>
+                            <DeleteIcon />
+                        </Button>
+                    }>
                   <ListItemButton onClick={() => handleProjectSelect(proj.id_project)}>
                     <FolderIcon sx={{ mr: 1 }} color={selectedProjectId === proj.id_project ? "primary" : "disabled"} />
                     <ListItemText primary={proj.nom_projet || <em>(Sans titre)</em>} secondary={proj.description}/>
