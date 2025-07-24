@@ -5,7 +5,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects } from '../api/projectApi';
 
 export default function ProjectSelector() {
-  const { user } = useContext(AuthContext);
+  const { user, idUser } = useContext(AuthContext);
   const { setSelectedProjectId } = useContext(ProjectContext);
   const { updateCounter, triggerUpdate } = useContext(ProjectUpdateContext);
   const [projects, setProjects] = useState([]);
@@ -13,17 +13,17 @@ export default function ProjectSelector() {
  
 
   useEffect(() => {
-    if (!user) return;
-    fetchProjects(user.id_user)
+    if (!idUser) return;
+    fetchProjects(idUser)
       .then(data => setProjects(data))
       .catch(err => setError(err.message));
-  }, [user, updateCounter]);
+  }, [idUser, updateCounter]);
 
   const handleSelect = (id) => setSelectedProjectId(id);
 
   const handleCreate = async () => {
     try {
-        const data = await createProject(user);
+        const data = await createProject(idUser);
         if (data.id_project) {
             setSelectedProjectId(data.id_project)
             triggerUpdate();

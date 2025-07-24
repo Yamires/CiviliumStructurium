@@ -6,13 +6,13 @@ export async function fetchProjects(userId) {
   return res.json();
 }
 
-export async function createProject(user) {
+export async function createProject(idUser) {
   const body = {
     nom_projet: "",
     description: "",
     date: null,
-    prepare_par: user.username,
-    id_user: user.id_user,
+    prepare_par:"",
+    id_user: idUser,
   };
   const res = await fetch('http://localhost:5050/api/add_project', {
     method: 'POST',

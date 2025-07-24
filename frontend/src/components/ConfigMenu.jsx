@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress} from '@mui/material';
+import {Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton, CircularProgress} from '@mui/material';
 import SettingsIcon from "@mui/icons-material/Settings";
 import { fetchConfig, saveConfig } from '../api/configApi';
 

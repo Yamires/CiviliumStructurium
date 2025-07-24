@@ -1,16 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { AppBar, Toolbar, Box, Button } from '@mui/material';
 import ProjectBrowser from './ProjectComponent'; 
 import { AuthContext,ProjectContext } from '../App';
 import ConfigMenu from './ConfigMenu';
+import { useAuth0 } from '@auth0/auth0-react';
+import ExportComponent from './ExportComponent';
 
-export default function Navbar({ onConfigClick }) {
-  const { user, setUser } = useContext(AuthContext);
+export default function Navbar({ onConfigClick, columns, rows }) {
+  const {user, idUser} = useContext(AuthContext);
   const {selectedProjectId, setSelectedProjectId} = useContext(ProjectContext)
+  const {logout} = useAuth0();
 
   const handleLogout = () => {
-    setUser(null);
     setSelectedProjectId(null);   
+    logout({logoutParams: { returnTo: window.location.origin }});
   };
 
   return (
@@ -23,10 +26,12 @@ export default function Navbar({ onConfigClick }) {
                 <Box>
                     {user && (
                         <>
+                            <ConfigMenu onClick={onConfigClick} />
+                            <ExportComponent columns={columns} rows={rows} defaultFileName="export.xlsx" />
                             <Button variant="contained" color="error" onClick={handleLogout} sx={{ ml: 1 }}>
                                 Déconnexion
                             </Button>
-                            <ConfigMenu onClick={onConfigClick} />
+                            
                         </>
                     )}
                 </Box>

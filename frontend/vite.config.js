@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'MonApp Desktop',
-        short_name: 'AppDesk',
+        name: 'Civilium Structuium',
+        short_name: 'CS',
         start_url: '/',
         scope: '/',
         display: 'standalone',
