@@ -38,3 +38,13 @@ export async function updateProject(fields, id_project) {
   if (!res.ok) throw new Error('Erreur lors de la mise à jour du projet');
   return res.json();
 }
+
+
+export async function deleteProject(id_project) {
+    const response = await fetch(`http://localhost:5050/api/delete_project/${id_project}`, {
+        method: 'DELETE'
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Erreur lors de la suppression");
+    return data;
+}
