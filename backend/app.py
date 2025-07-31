@@ -6,33 +6,47 @@ from solver import solve
 from filtrage import filter_sections
 from db import add_profil, get_all_profils, update_profil, delete_profil_db, get_projects_route, get_user, add_user, update_project, delete_project, get_user_by_email, add_user_by_email
 from db import add_project
+from pathlib import Path
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:4173"}})
+
+# CORS configuration    
+FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:4173')
+CORS(app, resources={r"api/*": {"origins": FRONTEND_ORIGIN}})
+
+
+Base_Dir = Path(__file__).resolve().parent
+Res_Dir= Path(os.getenv('Res_Dir', Base_Dir / 'ressource'))
+
+Templates_Yaml = Res_Dir / 'Templates.yaml'
+Config_Yaml = Res_Dir / 'config.yaml'
+
+@app.get('health')
+def health_check():
+    return jsonify({"status": "ok"}), 200
 
 # TEMPLATES
-
-@app.route('/api/getTemplate')
+@app.route('/api/getTemplate', methods=['GET'])
 def get_template():
-    with open('/Users/yamira.poldosilva/Documents/doc/UDEM/E25/IFT3150/react_App/backend/ressource/Templates.yaml', 'r') as file:
+    with open(Templates_Yaml, 'r') as file:
         data = yaml.safe_load(file)
     return jsonify(data)
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
-    with open('/Users/yamira.poldosilva/Documents/doc/UDEM/E25/IFT3150/react_App/backend/ressource/config.yaml', 'r') as file:
+    with open(Config_Yaml, 'r') as file:
         config = yaml.safe_load(file)
     return jsonify(config)
 
 @app.route('/api/config', methods=['POST'])
 def update_config(): 
     data = request.json 
-    with open('/Users/yamira.poldosilva/Documents/doc/UDEM/E25/IFT3150/react_App/backend/ressource/config.yaml', 'r') as file:
+    with open(Config_Yaml, 'r') as file:
         config = yaml.safe_load(file)
     for key, value in data.items():
         if key in config:
             config[key] = value
-    with open('/Users/yamira.poldosilva/Documents/doc/UDEM/E25/IFT3150/react_App/backend/ressource/config.yaml', 'w') as file:
+    with open(Config_Yaml, 'w') as file:
         yaml.safe_dump(config,file, default_flow_style=False,allow_unicode=True)
     return jsonify(config)
 
