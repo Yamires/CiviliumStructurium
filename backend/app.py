@@ -21,7 +21,7 @@ Res_Dir= Path(os.getenv('Res_Dir', Base_Dir / 'ressource'))
 Templates_Yaml = Res_Dir / 'Templates.yaml'
 Config_Yaml = Res_Dir / 'config.yaml'
 
-@app.get('health')
+@app.get('/health')
 def health_check():
     return jsonify({"status": "ok"}), 200
 
