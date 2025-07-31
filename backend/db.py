@@ -8,7 +8,7 @@ import os, psycopg
 def connect():
     url = os.getenv("DATABASE_URL")
     if url:
-        host - urlparase(url).hostname or ""
+        host = urlparse(url).hostname or ""
         need_ssl = "sslmode" not in url and ".internal" not in host
         if need_ssl:
             url = url + ("&" if "?" in url else "?") + "sslmode=require"
