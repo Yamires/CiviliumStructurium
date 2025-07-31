@@ -1,22 +1,26 @@
 import os
 import psycopg
 import json
+from urllib.parse import urlparse
 
 import os, psycopg
 
 def connect():
     url = os.getenv("DATABASE_URL")
     if url:
-        if "sslmode=" not in url:
-            url += ("&" if "?" in url else "?") + "sslmode=require"
-        return psycopg.connect(url)
+        host - urlparase(url).hostname or ""
+        need_ssl = "sslmode" not in url and ".internal" not in host
+        if need_ssl:
+            url = url + ("&" if "?" in url else "?") + "sslmode=require"
+        return psycopg.connect(url, connect_timeout=5)
 
     return psycopg.connect(
         dbname=os.getenv("PG_DB", "mydb"),
         host=os.getenv("PG_HOST", "127.0.0.1"),
         port=int(os.getenv("PG_PORT", "5432")),
         user=os.getenv("PG_USER", "postgres"),         
-        password=os.getenv("PG_PASSWORD", ""),        
+        password=os.getenv("PG_PASSWORD", ""),     
+        connect_timeout=5   
     )
 
 def create_table():
