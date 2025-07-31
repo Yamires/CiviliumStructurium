@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import yaml 
 from flask_cors import CORS
+import os
 from solver import solve
 from filtrage import filter_sections
 from db import add_profil, get_all_profils, update_profil, delete_profil_db, get_projects_route, get_user, add_user, update_project, delete_project, get_user_by_email, add_user_by_email
@@ -8,8 +9,6 @@ from db import add_project
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:4173"}})
-
-
 
 # TEMPLATES
 
@@ -74,7 +73,6 @@ def sync_user():
         return jsonify({"id_user": id_user, "username": username, "email": email})
     return jsonify({"id_user": user['id_user'], "username": user['username'], "email": user['email']})
 
-
 # PROJETS
 
 @app.route('/api/add_project', methods=['POST'])
@@ -124,7 +122,6 @@ def route_delete_project(id_project):
     except Exception as e:
         print("Erreur de suppression de projet:", e)
         return jsonify({'error': str(e)}), 500
-
 
 # PROFILS
 
@@ -184,7 +181,6 @@ def delete_profil(profil_id):
         print('Erreur de suppression:', err)
         return jsonify({"error": str(err)}), 500
 
-
 #  SOLVER 
 
 @app.route('/api/solver', methods=['POST'])
@@ -210,5 +206,9 @@ def solver_route():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5050)
+    # app.run(debug=True, port=5050)
+    # The port is set to 8080 by default, but can be overridden by the PORT environment variable.
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
+
 

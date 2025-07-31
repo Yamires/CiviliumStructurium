@@ -37,9 +37,7 @@ export default function CalculatorComponent({ onCalculate }) {
 
     if (calculationOptions[eq]) {
       const emptyInputs = {};
-      calculationOptions[eq].forEach(field => {
-        emptyInputs[field.name] = '';
-      });
+      calculationOptions[eq].forEach(field => { emptyInputs[field.name] = '';});
       setInputs(emptyInputs);
       setOutputs({})
     } else {
@@ -89,7 +87,8 @@ export default function CalculatorComponent({ onCalculate }) {
 
 
   return (
-    <Paper elevation={3} sx={{  width: { xs: '65%', sm: '75%', md: '85%', lg: '95%' },
+    <Paper elevation={3} 
+      sx={{  width: { xs: '65%', sm: '75%', md: '85%', lg: '95%' },
       mx: 'auto',
       my: 6,
       borderRadius: 4,
@@ -106,7 +105,7 @@ export default function CalculatorComponent({ onCalculate }) {
             <Typography variant="h6" gutterBottom> Inputs </Typography>
             <Box component="form" noValidate autoComplete="off" sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
               <FormControl fullWidth sx={{ gridColumn: { xs: 'span 1', md: 'span 2', lg: 'span 2' } }}>
-                <InputLabel>Choisir un calcul </InputLabel>
+                <InputLabel>Choisir une méthode </InputLabel>
                 <Select labelId="select-calcul-label" value={calculationType} label="Choisir un calcul" onChange={handleUpdateEq}>
                   <MenuItem value=""><em>Aucun</em></MenuItem>
                   {Object.keys(calculationOptions).map((key) => (<MenuItem key={key} value={key}>{key}</MenuItem>))}

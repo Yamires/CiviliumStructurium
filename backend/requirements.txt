@@ -1,0 +1,8 @@
+Flask
+gunicorn
+Flask-Cors
+PyYAML
+pandas
+psycopg[binary]
+sympy
+pytest

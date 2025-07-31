@@ -7,12 +7,10 @@ import { Typography, Button, Box } from '@mui/material';
 import { AuthContext, ProfilUpdateContext, ProjectContext, ProjectUpdateContext } from '../App';
 import { deleteProfil, updateProfil, getProfils } from '../api/profilsApi';
 import {defaultColumns, flattenProfil, autoColumns} from '../helpers/profilsTableHelpers'
-import ExportComponent from './ExportComponent';
-import IosShareIcon from '@mui/icons-material/IosShare';
 
-export default function DataTableComponent({columns, setColumns, rows, setRows}) {
 
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
+export default function DataTableComponent({columns, setColumns, rows, setRows, columnVisibilityModel, setColumnVisibilityModel}) {
+
   const {selectedProjectId, setSelectedProjectId, projectData} = useContext(ProjectContext);
   const {updateProfils, setUpdateProfils} = useContext(ProfilUpdateContext)
 

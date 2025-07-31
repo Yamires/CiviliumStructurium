@@ -6,7 +6,7 @@ import ConfigMenu from './ConfigMenu';
 import { useAuth0 } from '@auth0/auth0-react';
 import ExportComponent from './ExportComponent';
 
-export default function Navbar({ onConfigClick, columns, rows }) {
+export default function Navbar({ onConfigClick, columns, rows, columnVisibilityModel}) {
   const {user, idUser} = useContext(AuthContext);
   const {selectedProjectId, setSelectedProjectId} = useContext(ProjectContext)
   const {logout} = useAuth0();
@@ -27,7 +27,7 @@ export default function Navbar({ onConfigClick, columns, rows }) {
                     {user && (
                         <>
                             <ConfigMenu onClick={onConfigClick} />
-                            <ExportComponent columns={columns} rows={rows} defaultFileName="export.xlsx" />
+                            <ExportComponent columns={columns} rows={rows} defaultFileName="export.xlsx" columnVisibilityModel={columnVisibilityModel} />
                             <Button variant="contained" color="error" onClick={handleLogout} sx={{ ml: 1 }}>
                                 Déconnexion
                             </Button>

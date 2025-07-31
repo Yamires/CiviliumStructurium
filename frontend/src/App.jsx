@@ -10,6 +10,7 @@ import ProjectSelector from "./components/ProjectSelectorComponent";
 import image from "./assets/refargotohp-RFCFhhl3xfQ-unsplash.jpg";
 import theme from "./helpers/theme";
 import { useAuth0 } from "@auth0/auth0-react";
+import { syncUserApi } from "./api/authApi";
 
 export const AuthContext = createContext();
 export const ProjectContext = createContext();
@@ -20,6 +21,7 @@ export default function App() {
   const { user, isLoading, isAuthenticated } = useAuth0(); 
   const [idUser, setIdUser] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
   const [projectData, setProjectData] = useState({
     nom_projet: "",
     id_project: "",
@@ -37,25 +39,18 @@ export default function App() {
   const triggerUpdateProfils = () => setUpdateProfils(k => k + 1);
 
   useEffect(() => {
-    async function syncUserWithBackend() {
+    async function syncUser() {
       if (isAuthenticated && user) {
-        const res = await fetch('http://localhost:5050/api/users/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email,
-            name: user.name
-          })
-        });
-        const data = await res.json();
-        setIdUser(data.id_user);
+        try {
+          const data = await syncUserApi(user);
+          setIdUser(data.id_user);
+        }catch (error) {
+          console.error(error);
+        }
       }
     }
-    syncUserWithBackend();
+    syncUser();
   }, [isAuthenticated, user]);
-
-
-  if (isLoading) return <p>Chargement...</p>;
 
   return (
     <ThemeProvider theme={theme}>
@@ -79,7 +74,11 @@ export default function App() {
                 }}
               />
 
-              <Navbar onConfigClick={() => setConfigOpen(true)} columns={columns} rows={rows} />
+              <Navbar 
+                onConfigClick={() => setConfigOpen(true)} 
+                columns={columns} rows={rows} 
+                columnVisibilityModel={columnVisibilityModel} 
+              />
 
               <Container
                 maxWidth={false}
@@ -102,7 +101,13 @@ export default function App() {
                       <>
                         <ProjectBarComponent />
                         <CalculatorComponent />
-                        <DataTableComponent columns={columns} setColumns={setColumns} rows={rows} setRows={setRows} />
+                        <DataTableComponent 
+                            columns={columns} 
+                            setColumns={setColumns} 
+                            rows={rows} setRows={setRows} 
+                            columnVisibilityModel={columnVisibilityModel} 
+                            setColumnVisibilityModel={setColumnVisibilityModel} 
+                        />
                       </>
                     )}
                   </>
