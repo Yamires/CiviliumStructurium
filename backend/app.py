@@ -5,8 +5,9 @@ import os
 from solver import solve
 from filtrage import filter_sections
 from db import add_profil, get_all_profils, update_profil, delete_profil_db, get_projects_route, get_user, add_user, update_project, delete_project, get_user_by_email, add_user_by_email
-from db import add_project
+from db import add_project, create_table
 from pathlib import Path
+import psycopg
 
 app = Flask(__name__)
 
@@ -38,6 +39,17 @@ Config_Yaml = Res_Dir / 'config.yaml'
 @app.get('/health')
 def health_check():
     return jsonify({"status": "ok"}), 200
+
+@app.get("/init-db")
+def init_db():
+    try:
+        create_table()
+        return {"status": "ok"}
+    except Exception as e:
+        print("init-db error:", e)
+        return {"error": str(e)}, 500
+
+
 
 # TEMPLATES
 @app.route('/api/getTemplate', methods=['GET'])
