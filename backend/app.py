@@ -11,8 +11,22 @@ from pathlib import Path
 app = Flask(__name__)
 
 # CORS configuration    
-FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:4173')
-CORS(app, resources={r"api/*": {"origins": FRONTEND_ORIGIN}})
+from flask_cors import CORS
+import os
+
+app = Flask(__name__)
+
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:4173")
+
+CORS(
+    app,
+    resources={r"/api/*": {"origins": [FRONTEND_ORIGIN]}},
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=[],
+    supports_credentials=False,
+)
+
 
 
 Base_Dir = Path(__file__).resolve().parent
