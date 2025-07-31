@@ -1,50 +1,39 @@
-
+// src/api/projects.js
+import { request } from './client';
 
 export async function fetchProjects(userId) {
-  const res = await fetch(`http://localhost:5050/api/get_projects?id_user=${userId}`);
-  if (!res.ok) throw new Error('Erreur lors du chargement des projets');
-  return res.json();
+  return request(`/api/get_projects?id_user=${encodeURIComponent(userId)}`);
 }
 
 export async function createProject(idUser) {
   const body = {
-    nom_projet: "",
-    description: "",
-    date: null,
-    prepare_par:"",
+    nom_projet: '',
+    description: '',
+    date: null,        
+    prepare_par: '',
     id_user: idUser,
   };
-  const res = await fetch('http://localhost:5050/api/add_project', {
+  return request('/api/add_project', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error('Erreur lors de la création du projet');
-  return res.json();
 }
 
 export async function updateProject(fields, id_project) {
-  const res = await fetch('http://localhost:5050/api/update_project', {
+  return request('/api/update_project', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      id_project: id_project,
+      id_project,
       nom_projet: fields.nom_projet,
       description: fields.description,
-      date: fields.date,
+      date: fields.date,          
       prepare_par: fields.prepare_par,
     }),
   });
-  if (!res.ok) throw new Error('Erreur lors de la mise à jour du projet');
-  return res.json();
 }
 
-
 export async function deleteProject(id_project) {
-    const response = await fetch(`http://localhost:5050/api/delete_project/${id_project}`, {
-        method: 'DELETE'
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Erreur lors de la suppression");
-    return data;
+  return request(`/api/delete_project/${encodeURIComponent(id_project)}`, {
+    method: 'DELETE',
+  });
 }
