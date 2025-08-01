@@ -8,13 +8,7 @@ from db import add_profil, get_all_profils, update_profil, delete_profil_db, get
 from db import add_project, create_table
 from pathlib import Path
 import psycopg
-
-app = Flask(__name__)
-
-# CORS configuration    
-from flask_cors import CORS
-import os
-
+from server import requires_auth, requires_scope, init_auth, AuthError
 app = Flask(__name__)
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:4173")
@@ -28,27 +22,42 @@ CORS(
     supports_credentials=False,
 )
 
-
-
 Base_Dir = Path(__file__).resolve().parent
 Res_Dir= Path(os.getenv('Res_Dir', Base_Dir / 'ressource'))
 
 Templates_Yaml = Res_Dir / 'Templates.yaml'
 Config_Yaml = Res_Dir / 'config.yaml'
 
+init_auth(app)
+@app.get('/api/warmup')
+def warmup():
+    try:
+        import time
+        start_time = time.time()
+
+        from db import get_user
+        get_user('test_user')
+
+        total_time = time.time() - start_time
+        return jsonify({"status": "ok", "warmup_time": total_time}), 200
+    
+    except Exception as e:
+        print("Warmup error:", e)
+        return jsonify({"error": str(e)}), 500
+
 @app.get('/health')
 def health_check():
     return jsonify({"status": "ok"}), 200
 
-@app.get("/init-db")
-def init_db():
-    try:
-        create_table()
-        return {"status": "ok"}
-    except Exception as e:
-        print("init-db error:", e)
-        return {"error": str(e)}, 500
-
+## utiliser une fois pour initialiser la base de données
+##@app.get("/init-db")
+##def init_db():
+##    try:
+##        create_table()
+##        return {"status": "ok"}
+##    except Exception as e:
+##        print("init-db error:", e)
+##        return {"error": str(e)}, 500
 
 
 # TEMPLATES
@@ -65,6 +74,7 @@ def get_config():
     return jsonify(config)
 
 @app.route('/api/config', methods=['POST'])
+@requires_auth
 def update_config(): 
     data = request.json 
     with open(Config_Yaml, 'r') as file:
@@ -99,23 +109,34 @@ def signup():
     user_id = add_user(username, email)
     return jsonify({"id_user":user_id, "username": username})
 
+
 @app.route('/api/users/sync', methods=['POST'])
+@requires_auth
 def sync_user():
-    data = request.get_json()
-    email = data.get('email')
-    username = data.get('name')
-    if not email: 
-        return jsonify({"error": "Email requis"}), 400
+    try: 
+        current_user = _request_ctx_stack.top.current_user
+        email = current_user.get('email')
+        username = current_user.get('name', email)
+
+        if not email:
+            return jsonify({"error": "Email requis"}), 400
+
+        user = get_user_by_email(email)
+        if not user:
+            id_user = add_user_by_email(username, email)
+            return jsonify({"id_user": id_user, "username": username, "email": email, "auth0_id": current_user.get('sub')})
+        
+        return jsonify({"id_user": user['id_user'], "username": user['username'], "email": user['email'], "auth0_id": current_user.get('sub')})
     
-    user = get_user_by_email(email)
-    if not user: 
-        id_user = add_user_by_email(username, email)
-        return jsonify({"id_user": id_user, "username": username, "email": email})
-    return jsonify({"id_user": user['id_user'], "username": user['username'], "email": user['email']})
+    except Exception as e:
+        print("Erreur de synchronisation utilisateur:", e)
+        return jsonify({"error": str(e)}), 500
+
 
 # PROJETS
 
 @app.route('/api/add_project', methods=['POST'])
+@requires_auth
 def route_add_project():
     data = request.get_json()
     try:
@@ -131,6 +152,7 @@ def route_add_project():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/get_projects', methods=['GET'])
+@requires_auth
 def get_projects():
     try:
         id_user = request.args.get('id_user', type=int)
@@ -140,6 +162,7 @@ def get_projects():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/update_project', methods=['POST'])
+@requires_auth
 def route_update_project():
     data = request.get_json()
     try:
@@ -155,6 +178,7 @@ def route_update_project():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/delete_project/<int:id_project>', methods=['DELETE'])
+@requires_auth
 def route_delete_project(id_project):
     try:
         delete_project(id_project)
@@ -166,6 +190,7 @@ def route_delete_project(id_project):
 # PROFILS
 
 @app.route('/api/get_profils', methods=['GET'])
+@requires_auth
 def get_profils():
     try: 
         id_project = request.args.get('id_project', type=int)
@@ -176,6 +201,7 @@ def get_profils():
         return jsonify({'error':str(e)}), 500
 
 @app.route('/api/save-selection', methods=['POST'])
+@requires_auth
 def save_selection():
     data = request.get_json()
     calculationType = data.get('calculationType')
@@ -195,6 +221,7 @@ def save_selection():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/update_profils/<int:profil_id>', methods=['POST'])
+@requires_auth
 def update_profils(profil_id):
     data = request.json
     try: 
@@ -213,6 +240,7 @@ def update_profils(profil_id):
         return jsonify({"error": str(e)}), 500 
 
 @app.route('/api/delete_profil/<int:profil_id>', methods=['DELETE'])
+@requires_auth
 def delete_profil(profil_id):
     try:
         delete_profil_db(profil_id)
@@ -224,6 +252,7 @@ def delete_profil(profil_id):
 #  SOLVER 
 
 @app.route('/api/solver', methods=['POST'])
+@requires_auth
 def solver_route(): 
     data = request.get_json()
     methode = data.get('methode')
@@ -245,9 +274,16 @@ def solver_route():
         'profils': profils.to_dict(orient='records')[:nb_profils]
     })
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": "Not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error"}), 500
+
 if __name__ == '__main__':
     # app.run(debug=True, port=5050)
-    # The port is set to 8080 by default, but can be overridden by the PORT environment variable.
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port, debug=True)
 
