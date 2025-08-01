@@ -15,7 +15,6 @@ def filter_sections(values, dataframe_path = 'ressource/CISC_StructuralSectionTa
 
     #print(df.columns.tolist())
 
-
     for col in ['Sx', 'D', 'T', 'W', 'Ix', 'Zx']:
         df[col] = (
             df[col]
