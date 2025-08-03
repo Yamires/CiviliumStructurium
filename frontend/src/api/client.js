@@ -2,6 +2,10 @@ export const API_BASE = 'https://civiliumstructurium.onrender.com';
 
 export async function request(path, options = {}, token = null) {
   
+  if(!token) {
+    token = localStorage.getItem('access_token');
+  }
+  
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
