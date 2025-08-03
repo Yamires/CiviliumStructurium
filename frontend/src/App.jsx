@@ -18,7 +18,7 @@ export const ProjectUpdateContext = createContext();
 export const ProfilUpdateContext = createContext();
 
 export default function App() {
-  const { user, isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0(); 
+  const { user, isLoading, isAuthenticated, getAccessTokenSilently, getIdTokenClaims } = useAuth0(); 
   const [idUser, setIdUser] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
