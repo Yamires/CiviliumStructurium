@@ -8,6 +8,7 @@ from functools import wraps
 from flask import Flask, request, jsonify, g
 from flask_cors import cross_origin
 import os
+import jwt
 from jwt import PyJWKClient
 
 AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN', 'dev-20ay5shrj23453un.us.auth0.com')
