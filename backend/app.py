@@ -16,11 +16,11 @@ ALLOWED_ORIGINS = [origin.strip() for origin in FRONTEND_ORIGIN.split(',')]
 
 CORS(
     app,
-    resources={r"/api/*": {"origins": [ALLOWED_ORIGINS]}},
+    resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
     expose_headers=[],
-    supports_credentials=False,
+    supports_credentials=True,
 )
 
 Base_Dir = Path(__file__).resolve().parent
