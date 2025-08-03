@@ -49,7 +49,7 @@ export default function App() {
           );
           localStorage.setItem("access_token", token);
           console.log("Token:", token);
-          const data = await syncUserApi(user);
+          const data = await syncUserApi(user,token);
           setIdUser(data.id_user);
         }catch (error) {
           console.error(error);

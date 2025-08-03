@@ -14,11 +14,15 @@ export function signup(username, email) {
   });
 }
 
-export function syncUserApi(user) {
-  return request('/api/users/sync', {
-    method: 'POST',
-    body: JSON.stringify({ email: user.email, name: user.name }),
-  });
+export function syncUserApi(user, token) {
+  return request(
+    '/api/users/sync',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email: user.email, name: user.name }),
+    },
+    token 
+  );
 }
 
 
