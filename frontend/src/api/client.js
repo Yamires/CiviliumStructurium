@@ -1,24 +1,7 @@
 export const API_BASE = 'https://civiliumstructurium.onrender.com';
 
-export async function request(path, options = {}) {
-  const token = localStorage.getItem('access_token');
-
-  if (token) {
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.exp && payload.exp < Date.now() / 1000) {
-            console.warn('Token expired, clearing localStorage');
-            localStorage.removeItem('access_token');
-            throw new Error('Token expired');
-        }
-    } catch (error) {
-        console.error('Error parsing token:', error);
-        localStorage.removeItem('access_token');
-    }
-} 
-
-
-
+export async function request(path, options = {}, token = null) {
+  
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
