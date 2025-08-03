@@ -6,4 +6,5 @@ pandas
 psycopg[binary]
 sympy
 pytest
-PyJWT
+PyJWT>=2.0
+
