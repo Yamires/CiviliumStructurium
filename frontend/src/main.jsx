@@ -23,6 +23,8 @@ root.render(
     clientId={clientId}
     authorizationParams={{
       redirect_uri: window.location.origin,
+      audience: "https://civilium-api",
+      scope: "openid profile email",
     }}
     cacheLocation="localstorage">
     <React.StrictMode>
