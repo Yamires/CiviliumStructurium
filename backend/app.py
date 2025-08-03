@@ -262,13 +262,13 @@ def solver_route():
     nb_profils = data.get('nb_profils')
 
     if nb_profils is None:
-        with open('/Users/yamira.poldosilva/Documents/doc/UDEM/E25/IFT3150/react_App/backend/ressource/config.yaml') as file:
+        with open(Config_Yaml) as file:
             config = yaml.safe_load(file)
         nb_profils = int(config.get('default_nb_profils', 5))
     else: 
         nb_profils = int(nb_profils)
 
-    results = solve(methode,inputs)
+    results = solve(methode,inputs, config_path=Config_Yaml, template_path=Templates_Yaml)
     profils = filter_sections(results)
     
     return jsonify({
