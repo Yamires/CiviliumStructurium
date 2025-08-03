@@ -7,8 +7,8 @@ from six.moves.urllib.request import urlopen
 from functools import wraps
 from flask import Flask, request, jsonify, g
 from flask_cors import cross_origin
-import jwt
 import os
+from jwt import PyJWKClient
 
 AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN', 'dev-20ay5shrj23453un.us.auth0.com')
 API_AUDIENCE = os.environ.get('AUTH0_AUDIENCE', 'https://civilium-api')
@@ -61,30 +61,15 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        try:
-            unverified_header = jwt.get_unverified_header(token)
-            kid = unverified_header.get("kid")
-            if not kid:
-                raise AuthError({"code": "invalid_header", "description": "Token header missing 'kid'."}, 401)
-        except Exception as e:
-            raise AuthError({"code": "invalid_header", "description": f"Invalid token header: {str(e)}"}, 401)
-
-        jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
-        jwks = json.loads(jsonurl.read())
-
-        public_key = None
-        for key in jwks["keys"]:
-            if key["kid"] == kid:
-                public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
-                break
-
-        if public_key is None:
-            raise AuthError({"code": "invalid_header", "description": "Unable to find matching key."}, 401)
 
         try:
+            jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
+            jwk_client = PyJWKClient(jwks_url)
+            signing_key = jwk_client.get_signing_key_from_jwt(token).key
+
             payload = jwt.decode(
                 token,
-                public_key,
+                signing_key,
                 algorithms=ALGORITHMS,
                 audience=API_AUDIENCE,
                 issuer=f"https://{AUTH0_DOMAIN}/"
@@ -99,6 +84,7 @@ def requires_auth(f):
             raise AuthError({"code": "invalid_token", "description": f"Token validation failed: {str(e)}"}, 401)
 
         g.top.current_user = payload
+        print("JWT Payload:", payload)
         return f(*args, **kwargs)
 
     return decorated
