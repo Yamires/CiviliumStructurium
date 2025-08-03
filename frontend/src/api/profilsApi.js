@@ -1,42 +1,42 @@
 
+import { request } from './client';
 
 export async function deleteProfil(id) {
-  const res = await fetch(`http://localhost:5050/api/delete_profil/${id}`, {
-    method: "DELETE",
+  return request(`/api/delete_profil/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
   });
-  if (!res.ok) throw new Error("Erreur à la suppression");
-  return res.json();
 }
 
 export async function updateProfil(id, updates) {
-  const res = await fetch(`http://localhost:5050/api/update_profils/${id}`, {
+  const payload = {
+    axe: updates.axe ?? null,
+    de_a: updates.de_a ?? null,
+    verif_mf: updates.verif_mf ?? null,
+    verif_vf: updates.verif_vf ?? null,
+    verif_i: updates.verif_i ?? null,
+  };
+
+  return request(`/api/update_profils/${encodeURIComponent(id)}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updates),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Erreur de mise à jour");
-  return res.json();
 }
 
 export async function getProfils(selectedProjectId) {
-  const res = await fetch(`http://localhost:5050/api/get_profils?id_project=${selectedProjectId}`);
-  if (!res.ok) throw new Error("Erreur de chargement des profils");
-  return res.json();
+  return request(`/api/get_profils?id_project=${encodeURIComponent(selectedProjectId)}`);
 }
 
-export async function saveProfilSelection({calculationType, inputs, outputs, selectedProfil, id_project}) {
+export async function saveProfilSelection({ calculationType, inputs, outputs, selectedProfil, id_project }) {
   const bodyData = {
     calculationType,
     inputs,
     outputs,
     selectedProfil,
-    id_project
+    id_project,
   };
-  const res = await fetch('http://localhost:5050/api/save-selection', {
+
+  return request('/api/save-selection', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bodyData),
   });
-  if (!res.ok) throw new Error('Erreur du serveur');
-  return res.json();
 }

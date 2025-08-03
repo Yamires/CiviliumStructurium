@@ -1,4 +1,4 @@
-// src/api/projects.js
+
 import { request } from './client';
 
 export async function fetchProjects(userId) {

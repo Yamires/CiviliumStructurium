@@ -37,5 +37,12 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  define: { 'process.env': {} },
+  build:{
+    outDir:'dist',
+  },
+  server: {
+    port: 4173,
+  }, 
 })
