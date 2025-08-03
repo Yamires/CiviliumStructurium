@@ -58,50 +58,49 @@ def get_token_auth_header():
     return token
 
 def requires_auth(f):
-    """Determines if the Access Token is valid
-    """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        jsonurl = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
+        try:
+            unverified_header = jwt.get_unverified_header(token)
+            kid = unverified_header.get("kid")
+            if not kid:
+                raise AuthError({"code": "invalid_header", "description": "Token header missing 'kid'."}, 401)
+        except Exception as e:
+            raise AuthError({"code": "invalid_header", "description": f"Invalid token header: {str(e)}"}, 401)
+
+        jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
         jwks = json.loads(jsonurl.read())
-        unverified_header = jwt.get_unverified_header(token)
+
         public_key = None
         for key in jwks["keys"]:
-            if key["kid"] == unverified_header["kid"]:
+            if key["kid"] == kid:
                 public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
-        if public_key:
-            try:
-                payload = jwt.decode(
-                    token,
-                    public_key,
-                    algorithms=ALGORITHMS,
-                    audience=API_AUDIENCE,
-                    issuer="https://"+AUTH0_DOMAIN+"/"
-                )
-            except jwt.ExpiredSignatureError:
-                raise AuthError({"code": "token_expired",
-                                "description": "token is expired"}, 401)
-            except jwt.InvalidAudienceError:
-                raise AuthError({"code": "invalid_audience",
-                                "description":
-                                    "incorrect audience,"
-                                    " please check the audience"}, 401)
-            except jwt.InvalidIssuerError:
-                raise AuthError({"code": "invalid_issuer",
-                                "description":
-                                    "incorrect issuer,"
-                                    " please check the issuer"}, 401)
-            except Exception:
-                raise AuthError({"code": "invalid_header",
-                                "description":
-                                    "Unable to parse authentication"
-                                    " token."}, 401)
+                break
 
-            g.top.current_user = payload
-            return f(*args, **kwargs)
-        raise AuthError({"code": "invalid_header",
-                        "description": "Unable to find appropriate key"}, 401)
+        if public_key is None:
+            raise AuthError({"code": "invalid_header", "description": "Unable to find matching key."}, 401)
+
+        try:
+            payload = jwt.decode(
+                token,
+                public_key,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer=f"https://{AUTH0_DOMAIN}/"
+            )
+        except jwt.ExpiredSignatureError:
+            raise AuthError({"code": "token_expired", "description": "token is expired"}, 401)
+        except jwt.InvalidAudienceError:
+            raise AuthError({"code": "invalid_audience", "description": "incorrect audience"}, 401)
+        except jwt.InvalidIssuerError:
+            raise AuthError({"code": "invalid_issuer", "description": "incorrect issuer"}, 401)
+        except Exception as e:
+            raise AuthError({"code": "invalid_token", "description": f"Token validation failed: {str(e)}"}, 401)
+
+        g.top.current_user = payload
+        return f(*args, **kwargs)
+
     return decorated
 
 
