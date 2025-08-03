@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g 
 import yaml 
 from flask_cors import CORS
 import os
@@ -116,7 +116,7 @@ def signup():
 @requires_auth
 def sync_user():
     try: 
-        current_user = _request_ctx_stack.top.current_user
+        current_user = g.top.current_user
         email = current_user.get('email')
         username = current_user.get('name', email)
 
