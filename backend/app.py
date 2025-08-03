@@ -11,11 +11,12 @@ import psycopg
 from server import requires_auth, requires_scope, init_auth, AuthError
 app = Flask(__name__)
 
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:4173")
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:4173" )
+ALLOWED_ORIGINS = [origin.strip() for origin in FRONTEND_ORIGIN.split(',')]
 
 CORS(
     app,
-    resources={r"/api/*": {"origins": [FRONTEND_ORIGIN]}},
+    resources={r"/api/*": {"origins": [ALLOWED_ORIGINS]}},
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
     expose_headers=[],
@@ -29,6 +30,7 @@ Templates_Yaml = Res_Dir / 'Templates.yaml'
 Config_Yaml = Res_Dir / 'config.yaml'
 
 init_auth(app)
+
 @app.get('/api/warmup')
 def warmup():
     try:

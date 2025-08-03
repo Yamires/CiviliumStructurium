@@ -18,7 +18,7 @@ export const ProjectUpdateContext = createContext();
 export const ProfilUpdateContext = createContext();
 
 export default function App() {
-  const { user, isLoading, isAuthenticated } = useAuth0(); 
+  const { user, isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0(); 
   const [idUser, setIdUser] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
@@ -42,6 +42,12 @@ export default function App() {
     async function syncUser() {
       if (isAuthenticated && user) {
         try {
+          const token = await getAccessTokenSilently({
+            audience: "https://civilium-api",
+            scope: "openid profile email"
+          }
+          );
+          localStorage.setItem("access_token", token);
           const data = await syncUserApi(user);
           setIdUser(data.id_user);
         }catch (error) {
