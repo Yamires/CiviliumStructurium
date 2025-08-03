@@ -84,7 +84,7 @@ def requires_auth(f):
         except Exception as e:
             raise AuthError({"code": "invalid_token", "description": f"Token validation failed: {str(e)}"}, 401)
 
-        g.top.current_user = payload
+        g.current_user = payload
         print("JWT Payload:", payload)
         return f(*args, **kwargs)
 

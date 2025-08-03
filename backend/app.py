@@ -116,7 +116,7 @@ def signup():
 @requires_auth
 def sync_user():
     try: 
-        current_user = g.top.current_user
+        current_user = g.current_user
         email = current_user.get('email')
         username = current_user.get('name', email)
 
