@@ -72,23 +72,17 @@ def requires_auth(f):
                 token,
                 signing_key,
                 algorithms=ALGORITHMS,
-                audience=API_AUDIENCE,
-                issuer=f"https://{AUTH0_DOMAIN}/"
+                issuer=f"https://{AUTH0_DOMAIN}/",
+                options={"verify_aud": False}  
             )
-        except jwt.ExpiredSignatureError:
-            raise AuthError({"code": "token_expired", "description": "token is expired"}, 401)
-        except jwt.InvalidAudienceError:
-            raise AuthError({"code": "invalid_audience", "description": "incorrect audience"}, 401)
-        except jwt.InvalidIssuerError:
-            raise AuthError({"code": "invalid_issuer", "description": "incorrect issuer"}, 401)
         except Exception as e:
-            raise AuthError({"code": "invalid_token", "description": f"Token validation failed: {str(e)}"}, 401)
+            raise AuthError({"code": "invalid_token", "description": str(e)}, 401)
 
         g.current_user = payload
-        print("JWT Payload:", payload)
         return f(*args, **kwargs)
 
     return decorated
+
 
 
 def requires_scope(required_scope):

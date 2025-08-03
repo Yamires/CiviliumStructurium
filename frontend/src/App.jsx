@@ -42,11 +42,13 @@ export default function App() {
     async function syncUser() {
       if (isAuthenticated && user) {
         try {
-          const token = await getAccessTokenSilently({
-            audience: "https://civilium-api",
-            scope: "openid profile email"
-          }
-          );
+          const idTokenClaim = await getIdTokenClaims();
+          const token = idTokenClaim.__raw;
+          //const token = await getAccessTokenSilently({
+          //  audience: "https://civilium-api",
+          //  scope: "openid profile email"
+          //}
+          //);
           localStorage.setItem("access_token", token);
           console.log("Token:", token);
           const data = await syncUserApi(user,token);
