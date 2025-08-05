@@ -26,14 +26,14 @@ export async function getProfils(selectedProjectId) {
   return request(`/api/get_profils?id_project=${encodeURIComponent(selectedProjectId)}`);
 }
 
-export async function saveProfilSelection({ calculationType, inputs, outputs, selectedProfil, id_project, axe_nom, de_a }) {
+export async function saveProfilSelection({ calculationType, inputs, outputs, selectedProfil, id_project, axe, de_a }) {
   const bodyData = {
     calculationType,
     inputs,
     outputs,
     selectedProfil,
     id_project,
-    axe: axe_nom || null,
+    axe: axe || null,
     de_a: de_a || null,
   };
 
