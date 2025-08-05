@@ -5,6 +5,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects } from '../api/projectApi';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteProject } from '../api/projectApi';
+import ProjetDialog from './ProjetDialog';
 
 export default function ProjectSelector() {
   const { user, idUser } = useContext(AuthContext);
@@ -12,6 +13,9 @@ export default function ProjectSelector() {
   const { updateCounter, triggerUpdate } = useContext(ProjectUpdateContext);
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const handleOpenDialog = () => setOpenDialog(true); 
+  const handleCloseDialog = () => setOpenDialog(false);
  
 
   useEffect(() => {
@@ -23,9 +27,9 @@ export default function ProjectSelector() {
 
   const handleSelect = (id) => setSelectedProjectId(id);
 
-  const handleCreate = async () => {
+  const handleCreate = async (formData) => {
     try {
-        const data = await createProject(idUser);
+        const data = await createProject(idUser, formData);
         if (data.id_project) {
             setSelectedProjectId(data.id_project)
             triggerUpdate();
@@ -46,6 +50,7 @@ export default function ProjectSelector() {
   }
 
   return (
+    <>
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
         <Paper elevation={3} 
             sx={{ 
@@ -83,10 +88,12 @@ export default function ProjectSelector() {
                 ))}
                 </List>
             
-            <Button onClick={handleCreate} variant="contained" color="primary" sx={{ mt: 3 }}>
+            <Button onClick={handleOpenDialog} variant="contained" color="primary" sx={{ mt: 3 }}>
                 + Nouveau projet
             </Button>
         </Paper>
     </Box>
+    <ProjetDialog open={openDialog} onClose={handleCloseDialog} onConfirm={handleCreate} />
+    </>
   );
 }
