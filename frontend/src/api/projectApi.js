@@ -5,12 +5,12 @@ export async function fetchProjects(userId) {
   return request(`/api/get_projects?id_user=${encodeURIComponent(userId)}`);
 }
 
-export async function createProject(idUser) {
+export async function createProject(idUser, formData) {
   const body = {
-    nom_projet: '',
-    description: '',
-    date: null,        
-    prepare_par: '',
+    nom_projet: formData.nom_projet || '',
+    description: formData.description || '',
+    date: formData.date || null,        
+    prepare_par: formData.prepare_par || '',
     id_user: idUser,
   };
   return request('/api/add_project', {

@@ -6,6 +6,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects} from '../api/projectApi';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { deleteProject } from '../api/projectApi';
+import ProjetDialog from './ProjetDialog';
 
 export default function ProjectBrowser() {
   const {user, idUser} = useContext(AuthContext);
@@ -14,6 +15,10 @@ export default function ProjectBrowser() {
   const [projects, setProjects] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [error, setError] = useState(false)
+  const [openDialog, setOpenDialog] = useState(false);
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
 
   useEffect(() => {
       if (!idUser) return;
@@ -22,9 +27,9 @@ export default function ProjectBrowser() {
         .catch(err => setError(err.message));
   }, [idUser, updateCounter]);
 
-  const handleCreateProject = async () => {
+  const handleCreateProject = async (formData) => {
     try {
-        const data = await createProject(idUser);
+        const data = await createProject(idUser, formData);
         if (data.id_project) {
             setSelectedProjectId(data.id_project)
             triggerUpdate();
@@ -60,6 +65,7 @@ export default function ProjectBrowser() {
   const currentProject = projects.find(proj => proj.id_project === selectedProjectId);
 
   return (
+    <>
     <Box sx={{display:'flex', alignItems:'center', gap:2,flexWrap:'wrap',height:'64px' }}>
         <IconButton size="large" color="primary" onClick={handleDrawerOpen} sx={{height: 40, width: 40,}}>
           <MenuIcon />
@@ -68,7 +74,7 @@ export default function ProjectBrowser() {
           {currentProject ? (currentProject.nom_projet || <em>(Sans titre)</em>) : null }
         </Typography>
 
-        <Button variant="contained" color="primary" onClick={handleCreateProject} sx={{ml:1}}> + Nouveau projet </Button>
+        <Button variant="contained" color="primary" onClick={handleOpenDialog} sx={{ml:1}}> + Nouveau projet </Button>
      
         <Drawer anchor="left" open={drawerOpen} onClose={handleDrawerClose} slotProps={{paper: {sx: {width: 300, backgroundColor: 'background.custom', boxShadow: 3,} }}}>
           <Box sx={{ p: 2 }}>
@@ -98,5 +104,7 @@ export default function ProjectBrowser() {
           </Box>
         </Drawer>
     </Box>
+    <ProjetDialog open={openDialog} onClose={handleCloseDialog} onConfirm={handleCreateProject} />
+    </>
   );
 }
