@@ -210,12 +210,14 @@ def save_selection():
     inputs = data.get('inputs')
     outputs = data.get('outputs')
     selectedProfil = data.get('selectedProfil')
-    id_project = data.get('id_project')  
+    id_project = data.get('id_project') 
+    axe = data.get('axe')
+    de_a = data.get('de_a') 
 
     try:
         add_profil(
             calculationType, inputs, outputs, selectedProfil,
-            id_project=id_project  
+            id_project=id_project, axe=axe, de_a=de_a
         )
         return jsonify({'status':'ok'})
     except Exception as e: 

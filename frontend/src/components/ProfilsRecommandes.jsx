@@ -3,6 +3,7 @@ import { Typography, Button, Grid } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { AuthContext, ProfilUpdateContext, ProjectContext, ProjectUpdateContext } from '../App';
 import { saveProfilSelection } from '../api/profilsApi';
+import {Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
 
 export default function ProfilsRecommandes({ outputs, inputs, calculationType}) {
     const { selectedProjectId, setSelectedProjectId } = useContext(ProjectContext);
@@ -11,6 +12,24 @@ export default function ProfilsRecommandes({ outputs, inputs, calculationType}) 
         type: 'include',
         ids: new Set(),
     });
+    const [openDialog, setOpenDialog] = useState(false);
+    const [axeNom, setAxeNom] = useState('');
+    const [deA, setDeA] = useState('');
+
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    }   
+
+    const handleConfirm = () => {
+        setOpenDialog(false);
+        handleValider();
+        setAxeNom('');
+        setDeA('');
+    }
 
     const profilsAvecId = (outputs.profils ?? []).map((profil, idx) => ({
         ...profil,
@@ -30,7 +49,9 @@ export default function ProfilsRecommandes({ outputs, inputs, calculationType}) 
                 inputs, 
                 outputs: outputs.results, 
                 selectedProfil, 
-                id_project:selectedProjectId
+                id_project:selectedProjectId,
+                axe: axeNom,
+                de_a: deA
             });
             triggerUpdateProfils();
             alert('Profil sauvegardé');
@@ -55,6 +76,7 @@ export default function ProfilsRecommandes({ outputs, inputs, calculationType}) 
     }, {})
 
     return (
+        <>
         <Grid>
             <Typography variant="h6" gutterBottom>Profils recommandés</Typography>
             <DataGrid
@@ -80,9 +102,38 @@ export default function ProfilsRecommandes({ outputs, inputs, calculationType}) 
                 }}
                 
             />
-            <Button variant="contained" color="primary" disabled={!selectedProfil || profilsAvecId.length === 0} onClick={handleValider} sx={{mt:2}}>
+            <Button variant="contained" color="primary" disabled={!selectedProfil || profilsAvecId.length === 0} onClick={handleOpenDialog} sx={{mt:2}}>
                 Valider Sélection 
             </Button>
         </Grid>
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+            <DialogTitle>Valider la sélection</DialogTitle>
+            <DialogContent>
+                <TextField
+                fullWidth
+                variant="outlined"
+                size="small"
+                label="Nom de l'axe"
+                value={axeNom}
+                onChange={(e) => setAxeNom(e.target.value)}
+                sx={{ mb: 1 }}
+                />
+                <TextField
+                fullWidth
+                variant="outlined"
+                size="small"
+                label="De A"
+                value={deA}
+                onChange={(e) => setDeA(e.target.value)}
+                sx={{ mb: 1 }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleCloseDialog}>Annuler</Button>
+                <Button onClick={handleConfirm} variant="contained" color="primary">Confirmer</Button>
+            </DialogActions>
+        </Dialog>
+
+        </>                
     );
 }
