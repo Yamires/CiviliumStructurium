@@ -61,6 +61,12 @@ export default function App() {
     syncUser();
   }, [isAuthenticated, user]);
 
+  useEffect(() => {
+    fetch('https://civiliumstructurium.onrender.com/api/warmup')
+      .then(res => console.log("Warmup:", res.status))
+      .catch(err => console.warn("Warmup failed:", err));
+  }, []); 
+
   return (
     <ThemeProvider theme={theme}>
       <AuthContext value={{ user, idUser}}>
