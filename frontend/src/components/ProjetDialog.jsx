@@ -20,7 +20,6 @@ export default function ProjetDialog({open, onClose, onConfirm}) {
     const handleClose = () => {
     
         setNomProjet('');
-        setIdProject('');
         setDescription('');
         setDate('');
         setPreparePar('');
