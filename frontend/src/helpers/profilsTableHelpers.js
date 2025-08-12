@@ -1,3 +1,5 @@
+import { verifier } from './verifier';
+
 export const defaultColumns = [
   { field: 'axe', headerName: 'Axe', width: 90, editable: true },
   { field: 'de_a', headerName: 'De/A', width: 90, editable: true },
@@ -42,15 +44,6 @@ export function flattenProfil(row) {
   };
 }
 
-export function verifier({ mf, mr, ix, i, vf, vr }) {
-  let verif_mf = null;
-  let verif_vf = null;
-  let verif_i = null;
-  if (mf !== undefined && mr !== undefined && mr !== 0) verif_mf = mf / mr < 1;
-  if (i !== undefined && ix !== undefined && ix !== 0) verif_i = ix / i < 1;
-  if (vf !== undefined && vr !== undefined && vr !== 0) verif_vf = vf / vr < 1;
-  return { verif_mf, verif_vf, verif_i };
-}
 
 export function autoColumns(rows) {
   if (!rows || rows.length === 0) return defaultColumns;

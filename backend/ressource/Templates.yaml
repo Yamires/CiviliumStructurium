@@ -1,13 +1,13 @@
 calculationOptions:
   Poutre simple - Charge Uniformement Distribuée:
     - name: x
-      label: \@ x (m)
+      label: Au point X (m)
     - name: l
-      label: l (m)
+      label: Portée (m)
     - name: lt
-      label: lt (m)
+      label: Largeuer tributaire (m)
     - name: cv
-      label: c.v. (kPa)
+      label: Charge vive (kPa)
     - name: cm
       label: c.m. (kPa)
 
@@ -23,15 +23,13 @@ calculationOptions:
     - name: x
       label: \@ x (m)
     - name: x_at
-      label: \@ x condition calcul (m)
+      label: Condition calcul au point x (m)
     - name: lt
       label: lt (m)
     - name: cv
       label: c.v. (kPa)
     - name: cm
       label: c.m. (kPa)
-
-
 
 resultsTemplate:
   Poutre simple - Charge Uniformement Distribuée:
@@ -47,11 +45,8 @@ resultsTemplate:
       label: V.D+L (kN)
     - name: i
       label: I (E6 mm^4)
-    - name: ix
-      label: I.X. (E6 mm^4)
     - name: wl
       label: W.L. (kN/m)
-
 
   Poutre simple - Charge Uniforme au Centre: 
     - name: mmax
@@ -77,15 +72,10 @@ formules:
     vf: "(wl * l) / 2"
     vx: "wl * (l/2 - x)"
     vd: "(wd_l * l) / 2"
-    ## à vérifier !!! 
-    fleche_240 : "240"
-    fleche_360 : "360"
-    fleche_480 : "480"
-    # result = (10**3) * a * b * c * (d**3) * 5 / (384 * e)
-    I_240: "(5 * 1000 * cv * fleche_240 * l**3 * lt) / (384 * e)"
-    I_360: "(5 * 1000 * cv * fleche_360 * l**3 * lt) / (384 * e)"
-    I_480: "(5 * 1000 * cv * fleche_480 * l**3 * lt) / (384 * e)"
-    I_alt: "5 * (wd_l * 1000) * (l**4) / (384 * e * fleche_240)"
+    I_240: "(5 * 1000 * cv * 240 * l**3 * lt) / (384 * e)"
+    I_360: "(5 * 1000 * cv * 360 * l**3 * lt) / (384 * e)"
+    I_480: "(5 * 1000 * cv * 480 * l**3 * lt) / (384 * e)"
+    I_alt: "5 * (wd_l * 1000) * (l**4) / (384 * e * 240)"
     i: "Max (I_240, I_360, I_480)"
     wl: "((cv * 1.5) + (cm * 1.25)) * lt" 
 
