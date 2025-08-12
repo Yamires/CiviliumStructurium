@@ -36,7 +36,7 @@ def solve(methode, input_val, config_path='ressource/config.yaml', template_path
             # Erreur de parsing de la formule
             raise Exception(f"Erreur lors de l'analyse de la formule '{var}': {e}")
     print("dependencies:", dependencies)
-    print("ccontext 3:", context)
+    print("context 3:", context)
 
     # Initialisation des ensembles pour le tri topologique
     toSetFormulas = set(formulas)

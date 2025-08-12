@@ -51,11 +51,11 @@ resultsTemplate:
   Poutre simple - Charge Uniforme au Centre: 
     - name: mmax
       label: Mmax @ x (kN.m)
-    - name: mx
+    - name: mf
       label: M.X. (kN.m)
     - name: vf1
       label: V.F.1 (kN)
-    - name: vf2
+    - name: vf
       label: V.F.2 (kN)
     - name: vd
       label: V.D+L (kN)
@@ -85,7 +85,7 @@ formules:
     wdl: "(cv + cm)*lt"   
     
     vf1: "wl*b / (2*l) * (2*c + b)"     
-    vf2: "wl*b / (2*l) * (2*a + b)"     
+    vf: "wl*b / (2*l) * (2*a + b)"     
 
     # Effort tranchant à x (pour x > a et x < (a+b)) à travailler 
     vd: "Piecewise((vf1 - wl * (x - a), (x > a) & (x < (a + b))), (0, True))"
@@ -94,5 +94,5 @@ formules:
     mmax: "vf1 * (a + (vf1 / (2*wl)))"
 
     # Moment fléchissant en x :
-    mx: Piecewise((vf1*x_at, x < a), (vf1*x_at - wl/2 * (x_at - a)**2, (x > a) & (x < (a+b))), (vf2*(l - x_at), x > (a+b)))
+    mf: Piecewise((vf1*x_at, x < a), (vf1*x_at - wl/2 * (x_at - a)**2, (x > a) & (x < (a+b))), (vf2*(l - x_at), x > (a+b)))
     
