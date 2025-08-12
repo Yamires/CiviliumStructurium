@@ -61,7 +61,7 @@ def filter_sections(values, dataframe_path = 'ressource/CISC_StructuralSectionTa
     # Récupération des contraintes à respecter
     Mf = float(values.get('mf', 0))
     Vf = float(values.get('vf', 0))
-    In = float(values.get('i', 0))
+    In = float(values.get('i', 1000000))
 
     # Filtrage selon les contraintes de moment, effort tranchant et inertie
     condition1 = df['Mr'] > Mf      # Mr doit être supérieur au moment fléchissant requis
