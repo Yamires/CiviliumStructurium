@@ -1,0 +1,49 @@
+calculationOptions:
+  Méthode de test:
+    - name: a
+      label: a (unit)
+    - name: b
+      label: b (unit)
+
+  Méthode avec formule invalide:
+    - name: x
+      label: x (unit)
+
+  Méthode avec cycle:
+    - name: x
+      label: x (unit)
+
+  Méthode conditionnelle:
+    - name: x
+      label: x (m)
+
+resultsTemplate:
+  Méthode de test:
+    - name: c
+      label: c (unit)
+
+  Méthode avec formule invalide:
+    - name: y
+      label: y (unit)
+
+  Méthode avec cycle:
+    - name: z
+      label: z (unit)
+
+  Méthode conditionnelle:
+    - name: f
+      label: f(x) (unit)
+
+formules:
+  Méthode de test:
+    c: "a + b"
+
+  Méthode avec formule invalide:
+    y: "x **"  # Formule incorrecte
+
+  Méthode avec cycle:
+    z: "w + 1"
+    w: "z + 1"
+
+  Méthode conditionnelle:
+    f: "Piecewise((x**2, x < 0), (x, x >= 0))"
