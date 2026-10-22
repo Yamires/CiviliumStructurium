@@ -15,3 +15,5 @@ private-release/
 *.xlsx
 *.csv
 !tests/fixtures/*.csv
+test-results/
+playwright-report/

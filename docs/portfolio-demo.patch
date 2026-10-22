@@ -1,0 +1,50 @@
+--- a/astro.config.mjs
++++ b/astro.config.mjs
+@@ -23,3 +23,3 @@
+         "form-action 'none'",
+-        "frame-src https://www.canva.com",
++        "frame-src 'self' https://www.canva.com",
+         "img-src 'self' data:",
+--- a/src/content.config.ts
++++ b/src/content.config.ts
+@@ -10,2 +10,3 @@
+     destination: z.string().optional(),
++    demo: z.string().min(1).optional(),
+     category: z.enum(["Research", "Software", "Other"]).default("Software"),
+--- a/src/content/projects/civilium-structurium.md
++++ b/src/content/projects/civilium-structurium.md
+@@ -17,3 +17,7 @@
+   ]
+-links: []
++demo: "civilium/index.html"
++links:
++  - label: "Interactive demo"
++    url: "civilium/index.html"
++    description: "Browser calculator with fictional section data and editable calculation rules."
+ ---
+--- a/src/pages/work/[id].astro
++++ b/src/pages/work/[id].astro
+@@ -88,2 +88,16 @@
+         )}
++        {project.data.demo && (
++          <div class="project-demo">
++            <h3>Interactive demo</h3>
++            <p>The initial sections are fictional. Imported datasets stay in your browser.</p>
++            <iframe
++              src={artifactHref(project.data.demo)}
++              title={`${project.data.title} — interactive demo`}
++              width="100%"
++              height="900"
++              loading="lazy"
++            />
++            <p><a href={artifactHref(project.data.demo)}>Open the demo in a new page →</a></p>
++          </div>
++        )}
+       </Section>
+@@ -101 +115,6 @@
+ </Base>
++
++<style>
++  .project-demo { margin-top: 2rem; }
++  .project-demo iframe { display: block; width: 100%; border: 0; }
++</style>

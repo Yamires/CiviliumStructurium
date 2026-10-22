@@ -100,6 +100,8 @@ Publier le contenu de `frontend/dist-demo/` dans un dossier du site GitHub Pages
 
 La démo démarre avec des profilés entièrement fictifs. Les datasets importés restent en mémoire et disparaissent à la fermeture ou au rechargement de la page. Les méthodes et constantes sont sauvegardées dans le stockage local du navigateur. Les politiques du navigateur peuvent limiter ce stockage dans un iframe ; dans ce cas, ouvrir le lien directement.
 
+Le dossier `docs/` contient un patch pour intégrer la démo au portfolio Astro existant, avec les étapes de vérification.
+
 Les imports et calculs sont exécutés dans un worker avec une limite de temps. La démo ne contacte pas le backend et ne transmet pas le dataset à un service externe. Le navigateur doit prendre en charge les workers JavaScript et le stockage local.
 
 ## Développement et Tests
@@ -119,6 +121,8 @@ Après modification des YAML par défaut, synchroniser la version navigateur :
 ```bash
 .venv/bin/python backend/export_defaults.py
 ```
+
+Pour les tests navigateur, installer Chromium avec `cd frontend && npx playwright install chromium`, puis lancer `./scripts/verify.sh` depuis la racine. Le script exécute les tests, le lint et les deux builds avant les scénarios navigateur. Les projets de test sont isolés dans un sous-dossier de `data/` et utilisent uniquement des profilés fictifs. Fermer toute instance locale sur le port 5050 avant ces tests.
 
 Un test vérifie que les valeurs Python et navigateur restent identiques. Les tests et exemples publics utilisent uniquement des données inventées.
 
