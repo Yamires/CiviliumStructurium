@@ -1,6 +1,6 @@
-import json
 import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 import yaml
 
 RESOURCES = Path(__file__).resolve().parent / 'ressource'
@@ -23,9 +23,9 @@ def write_yaml(name, value):
 
 def write_text(name, text):
     path = data_dir() / name
-    temporary = path.with_suffix('.tmp')
-    temporary.write_text(text, encoding='utf-8')
-    temporary.replace(path)
+    with NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent, prefix=f'.{name}.', delete=False) as temporary:
+        temporary.write(text)
+    Path(temporary.name).replace(path)
 
 
 def read_sections():
