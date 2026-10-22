@@ -1,5 +1,7 @@
 """Petit DSL numérique : aucune expression utilisateur n'est exécutée comme du Python."""
 import ast
+import io
+import tokenize
 import math
 import operator
 import re
@@ -7,6 +9,7 @@ from pathlib import Path
 
 FUNCTIONS = {'Max', 'Min', 'Piecewise'}
 RESERVED = FUNCTIONS | {'True', 'False', '__proto__', 'constructor', 'prototype'}
+DECIMAL = re.compile(r'[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?')
 IDENTIFIER = re.compile(r'^[A-Za-z][A-Za-z0-9_]{0,63}$')
 OPS = {ast.Add: '+', ast.Sub: '-', ast.Mult: '*', ast.Div: '/', ast.Pow: '**',
        ast.Lt: '<', ast.LtE: '<=', ast.Gt: '>', ast.GtE: '>=', ast.Eq: '==',
@@ -19,7 +22,7 @@ BINARY = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator
 def number(value):
     if isinstance(value, bool) or value is None or value == '':
         raise ValueError('Un nombre fini est requis')
-    if isinstance(value, str) and not re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?', value.strip()):
+    if isinstance(value, str) and not DECIMAL.fullmatch(value.strip()):
         raise ValueError('Un nombre fini est requis')
     try:
         result = float(value)
@@ -42,6 +45,19 @@ def parse_formula(formula):
         root = ast.parse(formula.strip(), mode='eval').body
     except (SyntaxError, RecursionError):
         raise ValueError("Erreur lors de l'analyse de la formule") from None
+    tokens = [t for t in tokenize.generate_tokens(io.StringIO(formula.strip()).readline)
+              if t.type not in (tokenize.NL, tokenize.NEWLINE, tokenize.ENDMARKER)]
+    if len(tokens) > 512 or '\\' in formula:
+        raise ValueError('Formule trop complexe ou syntaxe non autorisée')
+    depth = 0
+    for index, token in enumerate(tokens):
+        if token.type == tokenize.COMMENT or (token.type == tokenize.NUMBER and not DECIMAL.fullmatch(token.string)):
+            raise ValueError('Seuls les nombres décimaux sans séparateur sont acceptés ; commentaires non autorisés')
+        if token.string == ',' and index + 1 < len(tokens) and tokens[index + 1].string == ')':
+            raise ValueError('Virgule finale non autorisée')
+        depth += (token.string == '(') - (token.string == ')')
+        if depth > 32:
+            raise ValueError('Formule trop imbriquée')
     if sum(1 for _ in ast.walk(root)) > 512:
         raise ValueError('Formule trop complexe')
 
@@ -130,7 +146,7 @@ def fields(items):
         if not isinstance(item, dict) or set(item) != {'name', 'label'}:
             raise ValueError('Chaque champ attend name et label')
         identifier(item['name'])
-        if not isinstance(item['label'], str) or not 1 <= len(item['label'].strip()) <= 200:
+        if not isinstance(item['label'], str) or not item['label'].strip() or len(item['label']) > 200:
             raise ValueError('Libellé requis (200 caractères maximum)')
         names.append(item['name'])
     if len(set(names)) != len(names):

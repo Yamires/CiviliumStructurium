@@ -21,14 +21,21 @@ function identifier(name) {
 
 export function parseFormula(formula) {
   if (typeof formula !== 'string' || !formula.trim() || formula.length > 2048) throw new Error('Formule vide ou trop longue');
-  const tokens = formula.trim().match(/(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|[A-Za-z][A-Za-z0-9_]*|\*\*|<=|>=|==|!=|[^\s]/g) || [];
+  const tokens = formula.trim().match(/(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|[A-Za-z][A-Za-z0-9_]*|\*\*|<=|>=|==|!=|[^ \t\n\r\f]/g) || [];
   if (tokens.length > 512) throw new Error('Formule trop complexe');
+  let parentheses = 0;
+  for (const char of formula.trim()) {
+    if (char === '(') parentheses++;
+    if (char === ')') parentheses--;
+    if (parentheses > 32) throw new Error('Formule trop imbriquée');
+    if ((char === '\n' || char === '\r') && parentheses === 0) throw new Error('Retour à la ligne hors de parenthèses');
+  }
   let index = 0;
   function expect(token) {
     if (tokens[index++] !== token) throw new Error(`Symbole attendu : ${token}`);
   }
   function expression(minimum = 0, depth = 0) {
-    if (depth > 32) throw new Error('Formule trop imbriquée');
+    if (depth > 64) throw new Error('Formule trop imbriquée');
     const token = tokens[index++];
     let tree;
     if (token === '+' || token === '-') tree = [token === '-' ? 'neg' : 'pos', expression(6, depth + 1)];
@@ -40,7 +47,10 @@ export function parseFormula(formula) {
       }
       expect(')');
     } else if (token === 'True' || token === 'False') tree = ['bool', token === 'True'];
-    else if (token && /^(?:\d|\.\d)/.test(token)) tree = ['num', number(token)];
+    else if (token && /^(?:\d|\.\d)/.test(token)) {
+      if (/^0[0-9]+$/.test(token) && Number(token) !== 0) throw new Error('Entier avec zéro initial non autorisé');
+      tree = ['num', number(token)];
+    }
     else if (functions.has(token) && tokens[index] === '(') {
       index++;
       const args = [expression(0, depth + 1)];
@@ -61,23 +71,31 @@ export function parseFormula(formula) {
   const tree = expression();
   if (index !== tokens.length) throw new Error('Expression non autorisée');
   checkTree(tree);
+  if (complexity(tree) > 512) throw new Error('Formule trop complexe');
   return tree;
 }
 
-function checkTree([op, ...args]) {
+function complexity([op, ...args]) {
+  if (op === 'num' || op === 'bool') return 1;
+  if (op === 'var') return 2;
+  return (functions.has(op) ? 3 : 2) + args.reduce((sum, arg) => sum + complexity(arg), 0);
+}
+
+function checkTree([op, ...args], depth = 0) {
+  if (depth > 32) throw new Error('Formule trop imbriquée');
   if (op === 'num' || op === 'var') return 'number';
   if (op === 'bool') return 'bool';
   if (op === 'tuple') throw new Error('Couple hors de Piecewise');
   if (op === 'Piecewise') {
     for (const pair of args) {
-      if (pair[0] !== 'tuple' || checkTree(pair[1]) !== 'number' || checkTree(pair[2]) !== 'bool') {
+      if (pair[0] !== 'tuple' || checkTree(pair[1], depth + 2) !== 'number' || checkTree(pair[2], depth + 2) !== 'bool') {
         throw new Error('Piecewise attend (valeur, condition)');
       }
     }
     return 'number';
   }
   const expected = ['&', '|'].includes(op) ? 'bool' : 'number';
-  if (args.some(a => checkTree(a) !== expected)) throw new Error('Type incompatible dans la formule');
+  if (args.some(a => checkTree(a, depth + 1) !== expected)) throw new Error('Type incompatible dans la formule');
   return ['<', '<=', '>', '>=', '==', '!=', '&', '|'].includes(op) ? 'bool' : 'number';
 }
 

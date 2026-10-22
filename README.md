@@ -61,6 +61,8 @@ Exemple :
 Piecewise((x**2, x < 0), (Max(x, 2), True))
 ```
 
+Utiliser des nombres décimaux (notation scientifique acceptée), sans commentaires ni virgule finale. L’imbrication est limitée à 32 niveaux.
+
 Le moteur trie les dépendances et refuse les cycles, les variables inconnues et les expressions non autorisées. Les calculs utilisent des nombres flottants, sans exécuter le texte des formules comme du code Python ou JavaScript. Une méthode contient au maximum 100 formules de 2048 caractères chacune.
 
 Le bouton **Tester** permet d'évaluer une méthode avant de l'enregistrer. Les erreurs numériques, dont les divisions par zéro, sont aussi vérifiées à chaque calcul. La validation ne démontre pas la validité d'une formule pour tous les cas physiques.

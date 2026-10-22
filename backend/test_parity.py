@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 @pytest.mark.parametrize('formula,x', [
+    ('(x\n+ 1)', 3), ('000 + x', 3), ('00.5 + x', 3),
     ('-x**2 + 2**-2', 3), ('2**3**2', 1), ('Min(x, 2, 3) + Max(1, x)', -2),
     ('Piecewise((1/x, x != 0), (0, True))', 0),
     ('Piecewise((x, (x > 0) & (x <= 2)), (0, True))', 2),
@@ -27,6 +28,23 @@ def test_python_javascript_parity(formula, x):
 
 @pytest.mark.parametrize('formula', ['x > 0 & x < 2', 'Max()', 'True + 2', 'x.__class__', 'Piecewise((1, 1))'])
 def test_both_reject_invalid_grammar(formula):
+    doc = template({'y': formula})
+    with pytest.raises(ValueError):
+        validate_template(doc, {})
+    script = '''import {validateTemplate} from './frontend/src/helpers/rules.js';
+    try { validateTemplate(JSON.parse(process.argv[1]), {}); process.exitCode=1; }
+    catch { process.exitCode=0; }'''
+    result = subprocess.run(['node', '--input-type=module', '-e', script, json.dumps(doc)], cwd=ROOT)
+    assert result.returncode == 0
+
+
+@pytest.mark.parametrize('formula', [
+    '0x10 + x', '1_000 + x', 'x + 1 # comment', 'Max(x,)',
+    'Piecewise((x, True),)', '01+x', '(' * 40 + 'x' + ')' * 40,
+    '+'.join(['x'] * 40), 'x\n+1', 'x\u00a0+1',
+    'Max(' + ','.join(['x+x+x+x+x'] * 32) + ')',
+])
+def test_unsupported_syntax_and_limits_match(formula):
     doc = template({'y': formula})
     with pytest.raises(ValueError):
         validate_template(doc, {})
