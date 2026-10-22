@@ -1,31 +1,15 @@
-export const API_BASE = 'https://civiliumstructurium.onrender.com';
+export const DEMO = import.meta.env.MODE === 'demo';
 
-export async function request(path, options = {}, token = null) {
-  
-  if(!token) {
-    token = localStorage.getItem('access_token');
+export async function request(path, options = {}) {
+  if (DEMO) {
+    const { demoRequest } = await import('./demoApi.js');
+    return demoRequest(path, options);
   }
-  
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-
-  console.log("Authorization header:", headers.Authorization);
-
-  const res = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(path, {
     ...options,
-    headers,
-    mode: 'cors',
-    credentials: 'include', 
+    headers: { 'Content-Type': 'application/json', ...options.headers },
   });
-
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json())?.error || msg; } catch {}
-    throw new Error(msg);
-  }
-
-  return res.json();
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  return data;
 }

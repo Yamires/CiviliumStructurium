@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, FormGroup, FormControlLabel, Checkbox, TextField, Typography, Divider, Box } from '@mui/material';
 import * as XLSX from 'xlsx';
 import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
-import { ProjectContext } from '../App';
+import { ProjectContext } from '../contexts';
 
 export default function ExportComponent({ columns = [], rows = [], defaultFileName = "export.xlsx" , columnVisibilityModel}) {
   const [open, setOpen] = useState(false);
@@ -85,7 +85,7 @@ export default function ExportComponent({ columns = [], rows = [], defaultFileNa
 
   return (
     <>
-      <Button startIcon={<FileDownloadIcon />} onClick={() => setOpen(true)}/>
+      <Button startIcon={<FileDownloadIcon />} onClick={() => setOpen(true)}>Exporter</Button>
     
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Exporter les données du projet</DialogTitle>

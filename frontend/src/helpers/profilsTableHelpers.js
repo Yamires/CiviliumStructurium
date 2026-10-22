@@ -1,4 +1,4 @@
-import { verifier } from './verifier';
+import { verifier } from './verifier.js';
 
 export const defaultColumns = [
   { field: 'axe', headerName: 'Axe', width: 90, editable: true },
@@ -19,6 +19,7 @@ export function flattenProfil(row) {
   const outputs = row.outputs || {};
   const selectedprofil = row.selectedprofil || {};
 
+  const checks = verifier({ mf: outputs.mf, mr: selectedprofil.Mr, ix: selectedprofil.Ix, i: outputs.i, vf: outputs.vf, vr: selectedprofil.Vr });
   return {
     axe: row.axe,
     de_a: row.de_a,
@@ -31,14 +32,7 @@ export function flattenProfil(row) {
     Ix: selectedprofil.Ix,
     Vf: outputs.vf,
     Mf: outputs.mf,
-    ...verifier({
-      mf: outputs.mf,
-      mr: selectedprofil.Mr,
-      ix: selectedprofil.Ix,
-      i: outputs.i,
-      vf: outputs.vf,
-      vr: selectedprofil.Vr,
-    }),
+    ...Object.fromEntries(Object.entries(checks).map(([key, value]) => [key, row[key] ?? value])),
     __raw: row,
     id: row.id,  
   };
@@ -48,7 +42,7 @@ export function flattenProfil(row) {
 export function autoColumns(rows) {
   if (!rows || rows.length === 0) return defaultColumns;
   const seen = new Set(defaultColumns.map(c => c.field));
-  const dynamicCols = Object.keys(rows[0])
+  const dynamicCols = [...new Set(rows.flatMap(row => Object.keys(row)))]
     .filter(
       key => !seen.has(key) && key !== '__raw' && key !== 'id'
     )
@@ -56,7 +50,7 @@ export function autoColumns(rows) {
       field: key,
       headerName: key.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()),
       width: 100,
-      type: typeof rows[0][key] === 'number' ? 'number' : 'string',
+      type: typeof rows.find(row => row[key] !== undefined)?.[key] === 'number' ? 'number' : 'string',
       editable: false,
     }));
   return [...defaultColumns, ...dynamicCols];

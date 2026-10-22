@@ -1,72 +1,34 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ProjectContext, AuthContext, ProjectUpdateContext } from '../App';
-import { Box, Stack, TextField, Typography, Button, Paper } from '@mui/material';
+import { useContext, useEffect, useState } from 'react';
+import { Alert, Box, Button, Paper, TextField } from '@mui/material';
+import { ProjectContext, ProjectUpdateContext } from '../contexts';
 import { fetchProjects, updateProject } from '../api/projectApi';
 
-
-function makeFields(project, selectedProjectId, user) {
-    return {
-        nom_projet: project?.nom_projet || "",
-        id_project: project?.id_project || selectedProjectId,
-        description: project?.description || "",
-        date: project?.date || "",
-        prepare_par: project?.prepare_par || (user ? user.username : ""),
-    };
-}
-
 export default function ProjectBarComponent() {
-    const { selectedProjectId, projectData, setProjectData } = useContext(ProjectContext);
-    const { user, idUser } = useContext(AuthContext);
-    const {triggerUpdate} = useContext(ProjectUpdateContext)
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        if (!selectedProjectId || !idUser) return;
-        fetchProjects(idUser)
-            .then(data => {
-                const project = data.find(p => Number(p.id_project) === Number(selectedProjectId));
-                setProjectData(makeFields(project, selectedProjectId, user))
-                console.log("projectData:", projectData);
-            })
-            .catch(err => setError(err.message))
-    }, [selectedProjectId, idUser, setProjectData]);
-
-    const handleFieldChange = e => {
-        const { name, value } = e.target;
-        setProjectData(f => ({ ...f, [name]: value }));
-        console.log("projectData:", projectData);
-    };
-
-    const handleSave = async () => {
-        setMessage("");
-        try {
-            await updateProject(projectData, selectedProjectId)
-            console.log("projectData:", projectData);
-            setMessage("Projet enregistré !");
-            triggerUpdate();
-        } catch (err) {
-            setError(err.message || "Erreur d'enregistrement");
-        }
-    };
-
-    return (
-        <Box sx={{width: '100%', display: 'flex',justifyContent: 'center', alignItems: 'center', my: 4, }}>
-            <Paper elevation={3} sx={{width: { xs: '100%', sm: '90%', md: '80%', lg: '60%' }, backgroundColor: 'background.custom',py: 3, px: 2, boxShadow: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: '100%' }}>
-
-                <TextField label="Projet" name="nom_projet" value={projectData.nom_projet} onChange={handleFieldChange} variant="outlined"sx={{ minWidth: 160 }}/>
-                <TextField label="No. projet" name="id_project" value={projectData.id_project} disabled variant="outlined" sx={{ width: 100 }} />
-                <TextField label="Description" name="description" value={projectData.description} onChange={handleFieldChange} variant="outlined" sx={{ minWidth: 220 }}/>
-                <TextField label="Date" name="date" type="date" value={projectData.date || ""} onChange={handleFieldChange} sx={{ width: 160 }} />
-                <TextField label="Préparé par" name="prepare_par" value={projectData.prepare_par} onChange={handleFieldChange} variant="outlined" sx={{ minWidth: 140 }}/>
-                <Button onClick={handleSave} variant="contained" disabled={false} sx={{ minWidth: 120 }}> Enregistrer </Button>
-
-            </Stack> {message && (
-                <Typography variant="body2" color={message.includes("Erreur") ? "error" : "success.main"} sx={{ mt: 2 }}> {message} </Typography>
-            )}
-            </Paper>
-        </Box>
-        );
-    }
+  const { selectedProjectId, projectData, setProjectData } = useContext(ProjectContext);
+  const { triggerUpdate } = useContext(ProjectUpdateContext);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    fetchProjects().then(projects => {
+      const project = projects.find(p => p.id_project === selectedProjectId);
+      if (active && project) setProjectData(project);
+    }).catch(err => { if (active) setError(err.message); });
+    return () => { active = false; };
+  }, [selectedProjectId, setProjectData]);
+  const save = async event => {
+    event.preventDefault(); setError(''); setMessage('');
+    try { await updateProject(projectData, selectedProjectId); triggerUpdate(); setMessage('Projet enregistré !'); }
+    catch (err) { setError(err.message); }
+  };
+  return <Paper sx={{ p: 3, my: 3, backgroundColor: 'background.custom' }}>
+    {error && <Alert severity="error">{error}</Alert>}
+    {message && <Alert severity="success">{message}</Alert>}
+    <Box component="form" onSubmit={save} sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      {[['nom_projet', 'Projet'], ['description', 'Description'], ['date', 'Date'], ['prepare_par', 'Préparé par']].map(([key, label]) =>
+        <TextField key={key} label={label} type={key === 'date' ? 'date' : 'text'} slotProps={key === 'date' ? { inputLabel: { shrink: true } } : {}}
+          value={projectData[key] || ''} onChange={e => setProjectData(p => ({ ...p, [key]: e.target.value }))} sx={{ flex: '1 1 180px' }} />)}
+      <Button type="submit" variant="contained">Enregistrer</Button>
+    </Box>
+  </Paper>;
+}

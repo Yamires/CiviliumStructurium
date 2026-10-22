@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {AuthContext, ProjectContext, ProjectUpdateContext} from '../App';
-import {Box, Drawer, List, ListItem, ListItemButton, ListItemText, IconButton, Typography, Button, Divider,} from '@mui/material';
+import {ProjectContext, ProjectUpdateContext} from '../contexts';
+import {Alert, Box, Drawer, List, ListItem, ListItemButton, ListItemText, IconButton, Typography, Button, Divider,} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects} from '../api/projectApi';
@@ -9,7 +9,6 @@ import { deleteProject } from '../api/projectApi';
 import ProjetDialog from './ProjetDialog';
 
 export default function ProjectBrowser() {
-  const {user, idUser} = useContext(AuthContext);
   const {selectedProjectId, setSelectedProjectId} = useContext(ProjectContext);
   const {updateCounter, triggerUpdate} = useContext(ProjectUpdateContext);
   const [projects, setProjects] = useState([]);
@@ -21,15 +20,14 @@ export default function ProjectBrowser() {
 
 
   useEffect(() => {
-      if (!idUser) return;
-      fetchProjects(idUser)
+        fetchProjects()
         .then(data => setProjects(data))
         .catch(err => setError(err.message));
-  }, [idUser, updateCounter]);
+  }, [updateCounter]);
 
   const handleCreateProject = async (formData) => {
     try {
-        const data = await createProject(idUser, formData);
+        const data = await createProject(formData);
         if (data.id_project) {
             setSelectedProjectId(data.id_project)
             triggerUpdate();
@@ -39,7 +37,6 @@ export default function ProjectBrowser() {
     }
   };
 
-  if (!user) return null;
 
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
@@ -51,9 +48,10 @@ export default function ProjectBrowser() {
 
 
   const handleDetete = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return; 
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return;
     try {
         await deleteProject(id);
+        if (id === selectedProjectId) setSelectedProjectId(null);
         triggerUpdate();
     } catch(err) {
         setError(err.message);
@@ -67,7 +65,7 @@ export default function ProjectBrowser() {
   return (
     <>
     <Box sx={{display:'flex', alignItems:'center', gap:2,flexWrap:'wrap',height:'64px' }}>
-        <IconButton size="large" color="primary" onClick={handleDrawerOpen} sx={{height: 40, width: 40,}}>
+        <IconButton aria-label="Ouvrir les projets" size="large" color="primary" onClick={handleDrawerOpen} sx={{height: 40, width: 40,}}>
           <MenuIcon />
         </IconButton>
         <Typography sx={{ minWidth: 60 }} variant="body1" color="text.primary">
@@ -75,7 +73,7 @@ export default function ProjectBrowser() {
         </Typography>
 
         <Button variant="contained" color="primary" onClick={handleOpenDialog} sx={{ml:1}}> + Nouveau projet </Button>
-     
+
         <Drawer anchor="left" open={drawerOpen} onClose={handleDrawerClose} slotProps={{paper: {sx: {width: 300, backgroundColor: 'background.custom', boxShadow: 3,} }}}>
           <Box sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom> Mes projets </Typography>
@@ -88,13 +86,13 @@ export default function ProjectBrowser() {
               )}
 
               {projects.map(proj => (
-                <ListItem key={proj.id_project} disablePadding selected={selectedProjectId === proj.id_project}
+                <ListItem key={proj.id_project} disablePadding
                 secondaryAction={
-                        <Button onClick= {() => handleDetete(proj.id_project)} color="error" size="small" sx={{minWidth:0, ml: 1 }}>
+                        <Button onClick= {() => handleDetete(proj.id_project)} aria-label="Supprimer le projet" color="error" size="small" sx={{minWidth:0, ml: 1 }}>
                             <DeleteIcon />
                         </Button>
                     }>
-                  <ListItemButton onClick={() => handleProjectSelect(proj.id_project)}>
+                  <ListItemButton selected={selectedProjectId === proj.id_project} onClick={() => handleProjectSelect(proj.id_project)}>
                     <FolderIcon sx={{ mr: 1 }} color={selectedProjectId === proj.id_project ? "primary" : "disabled"} />
                     <ListItemText primary={proj.nom_projet || <em>(Sans titre)</em>} secondary={proj.description}/>
                   </ListItemButton>
@@ -104,6 +102,7 @@ export default function ProjectBrowser() {
           </Box>
         </Drawer>
     </Box>
+    {error && <Alert severity="error">{error}</Alert>}
     <ProjetDialog open={openDialog} onClose={handleCloseDialog} onConfirm={handleCreateProject} />
     </>
   );

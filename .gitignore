@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+dist-demo/
+data/
+private-release/
+*.xlsx
+*.csv
+!tests/fixtures/*.csv

@@ -1,139 +1,48 @@
-import { useEffect, useState, useContext, useMemo} from 'react';
-import { Typography, Button, Grid } from '@mui/material';
+import { useContext, useState } from 'react';
+import { Alert, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { AuthContext, ProfilUpdateContext, ProjectContext, ProjectUpdateContext } from '../App';
+import { ProjectContext, ProfilUpdateContext } from '../contexts';
 import { saveProfilSelection } from '../api/profilsApi';
-import {Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
+import { DEMO } from '../api/client';
 
-export default function ProfilsRecommandes({ outputs, inputs, calculationType}) {
-    const { selectedProjectId, setSelectedProjectId } = useContext(ProjectContext);
-    const {triggerUpdateProfils} = useContext(ProfilUpdateContext);
-    const [rowSelectionModel, setRowSelectionModel] = useState({
-        type: 'include',
-        ids: new Set(),
-    });
-    const [openDialog, setOpenDialog] = useState(false);
-    const [axeNom, setAxeNom] = useState('');
-    const [deA, setDeA] = useState('');
-
-    const handleOpenDialog = () => {
-        setOpenDialog(true);
-    }
-
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-    }   
-
-    const handleConfirm = () => {
-        setOpenDialog(false);
-        handleValider();
-        setAxeNom('');
-        setDeA('');
-    }
-
-    const profilsAvecId = (outputs.profils ?? []).map((profil, idx) => ({
-        ...profil,
-        id: idx,
-    }));
-
-    const selectedProfilId = rowSelectionModel.ids.size > 0 ? Array.from(rowSelectionModel.ids)[0]: null ; 
-
-    const selectedProfil = profilsAvecId.find(
-        row => row.id === selectedProfilId
-    );
-
-    const handleValider = async () => { 
-        try {
-            await saveProfilSelection({
-                calculationType,
-                inputs, 
-                outputs: outputs.results, 
-                selectedProfil, 
-                id_project:selectedProjectId,
-                axe: axeNom,
-                de_a: deA
-            });
-            triggerUpdateProfils();
-            alert('Profil sauvegardé');
-        } catch (err) {
-            alert('Erreur de sauvegarde');
-        }
-    };
-
-    const allColumns = Object.keys(outputs.profils?.[0] || {})
-
-    const columns = allColumns.map(key => ({
-        field: key,
-        headerName:key === 'Ds_m' ? 'Dimension' : key.replace(/_/g,'').replace(/^\w/, c => c.toUpperCase()),
-        width: 120,
-    }))
-
-    const defaultColumns = ['Ds_m', 'Mr','Vr','Ix'];
-
-    const columnVisibilityModel = allColumns.reduce((acc, column) => {
-        acc[column] = defaultColumns.includes(column);
-        return acc 
-    }, {})
-
-    return (
-        <>
-        <Grid>
-            <Typography variant="h6" gutterBottom>Profils recommandés</Typography>
-            <DataGrid
-                key={JSON.stringify(defaultColumns)}
-                columns={columns}
-                rows={profilsAvecId}
-                getRowId={row => row.id}
-                initialState={{pagination:{paginationModel: {pageSize: 10}}}}
-                pageSizeOptions={[10]}
-                columnVisibilityModel={columnVisibilityModel}
-                sx={{ height: 400, backgroundColor:'background.custom'}}
-                checkboxSelection = {false}
-                rowSelectionModel={rowSelectionModel}
-                onRowSelectionModelChange={(newRowSelectionModel) => {
-                  if (Array.isArray(newRowSelectionModel)) {
-                    setRowSelectionModel({
-                        type: 'include',
-                        ids: new Set(newRowSelectionModel),
-                    })
-                  } else {
-                    setRowSelectionModel(newRowSelectionModel);
-                  }
-                }}
-                
-            />
-            <Button variant="contained" color="primary" disabled={!selectedProfil || profilsAvecId.length === 0} onClick={handleOpenDialog} sx={{mt:2}}>
-                Valider Sélection 
-            </Button>
-        </Grid>
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-            <DialogTitle>Valider la sélection</DialogTitle>
-            <DialogContent>
-                <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                label="Nom de l'axe"
-                value={axeNom}
-                onChange={(e) => setAxeNom(e.target.value)}
-                sx={{ mb: 1 }}
-                />
-                <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                label="De A"
-                value={deA}
-                onChange={(e) => setDeA(e.target.value)}
-                sx={{ mb: 1 }}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCloseDialog}>Annuler</Button>
-                <Button onClick={handleConfirm} variant="contained" color="primary">Confirmer</Button>
-            </DialogActions>
-        </Dialog>
-
-        </>                
-    );
+export default function ProfilsRecommandes({ outputs, inputs, calculationType }) {
+  const { selectedProjectId } = useContext(ProjectContext);
+  const { triggerUpdateProfils } = useContext(ProfilUpdateContext);
+  const [selected, setSelected] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [axe, setAxe] = useState('');
+  const [deA, setDeA] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const rows = (outputs.profils || []).map((p, id) => ({ ...p, id }));
+  const current = rows.find(p => p.Ds_m === selected);
+  const fields = [...new Set(rows.flatMap(row => Object.keys(row)))].filter(k => k !== 'id');
+  const visible = ['Ds_m', 'Mr', 'Vr', 'Ix'];
+  const handleSave = async () => {
+    setBusy(true); setError('');
+    try {
+      const { id: _id, ...profil } = current;
+      await saveProfilSelection({ calculationType, inputs, outputs: outputs.results, selectedProfil: profil, id_project: selectedProjectId, axe, de_a: deA });
+      triggerUpdateProfils(); setOpen(false); setAxe(''); setDeA('');
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  };
+  return <Box sx={{ minWidth: 0 }}>
+    <Typography component="h2" variant="h6" gutterBottom>Profils présélectionnés</Typography>
+    <DataGrid rows={rows} columns={fields.map(field => ({ field, headerName: field === 'Ds_m' ? 'Dimension' : field, width: 120 }))}
+      columnVisibilityModel={Object.fromEntries(fields.map(field => [field, visible.includes(field)]))}
+      onRowClick={({ row }) => setSelected(row.Ds_m)}
+      initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} pageSizeOptions={[10]} sx={{ height: 360 }} />
+    {outputs.results && !rows.length && <Typography sx={{ mt: 1 }}>Aucun profilé présélectionné.</Typography>}
+    {!DEMO && <Button variant="contained" disabled={!current || busy} onClick={() => { setOpen(true); setError(''); }} sx={{ mt: 2 }}>Valider la sélection</Button>}
+    <Dialog open={open} onClose={() => !busy && setOpen(false)}>
+      <DialogTitle>Valider la sélection</DialogTitle>
+      <DialogContent>
+        {error && <Alert severity="error">{error}</Alert>}
+        <TextField fullWidth label="Nom de l'axe" value={axe} onChange={e => setAxe(e.target.value)} margin="dense" />
+        <TextField fullWidth label="De/A" value={deA} onChange={e => setDeA(e.target.value)} margin="dense" />
+      </DialogContent>
+      <DialogActions><Button disabled={busy} onClick={() => setOpen(false)}>Annuler</Button><Button disabled={busy || !current} onClick={handleSave}>Confirmer</Button></DialogActions>
+    </Dialog>
+  </Box>;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext, ProjectContext, ProjectUpdateContext } from '../App';
-import { Box, Button, Typography, List, ListItem, ListItemButton, ListItemText, Paper } from '@mui/material';
+import { ProjectContext, ProjectUpdateContext } from '../contexts';
+import { Alert, Box, Button, Typography, List, ListItem, ListItemButton, ListItemText, Paper } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import { createProject, fetchProjects } from '../api/projectApi';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,7 +8,6 @@ import { deleteProject } from '../api/projectApi';
 import ProjetDialog from './ProjetDialog';
 
 export default function ProjectSelector() {
-  const { user, idUser } = useContext(AuthContext);
   const { setSelectedProjectId } = useContext(ProjectContext);
   const { updateCounter, triggerUpdate } = useContext(ProjectUpdateContext);
   const [projects, setProjects] = useState([]);
@@ -19,17 +18,16 @@ export default function ProjectSelector() {
  
 
   useEffect(() => {
-    if (!idUser) return;
-    fetchProjects(idUser)
+    fetchProjects()
       .then(data => setProjects(data))
       .catch(err => setError(err.message));
-  }, [idUser, updateCounter]);
+  }, [updateCounter]);
 
   const handleSelect = (id) => setSelectedProjectId(id);
 
   const handleCreate = async (formData) => {
     try {
-        const data = await createProject(idUser, formData);
+        const data = await createProject(formData);
         if (data.id_project) {
             setSelectedProjectId(data.id_project)
             triggerUpdate();
@@ -55,7 +53,7 @@ export default function ProjectSelector() {
         <Paper elevation={3} 
             sx={{ 
                 p: 4,
-                minWidth: 350,
+                width: '100%', maxWidth: 500,
                 textAlign: 'center',
                 backgroundColor: 'background.custom',
                 maxHeight: 500,       
@@ -76,7 +74,7 @@ export default function ProjectSelector() {
                     <ListItem key={proj.id_project} 
                     disablePadding 
                     secondaryAction={
-                        <Button onClick= {() => handleDetete(proj.id_project)} color="error" size="small" sx={{minWidth:0, ml: 1 }}>
+                        <Button onClick= {() => handleDetete(proj.id_project)} aria-label="Supprimer le projet" color="error" size="small" sx={{minWidth:0, ml: 1 }}>
                             <DeleteIcon />
                         </Button>
                     }>
@@ -93,6 +91,7 @@ export default function ProjectSelector() {
             </Button>
         </Paper>
     </Box>
+    {error && <Alert severity="error">{error}</Alert>}
     <ProjetDialog open={openDialog} onClose={handleCloseDialog} onConfirm={handleCreate} />
     </>
   );

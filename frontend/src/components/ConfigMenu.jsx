@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import {Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton, CircularProgress} from '@mui/material';
+import {Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress} from '@mui/material';
 import SettingsIcon from "@mui/icons-material/Settings";
 import { fetchConfig, saveConfig } from '../api/configApi';
 
-export default function ConfigMenu() {
+export default function ConfigMenu({ onChanged }) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState ({});
     const [config, setConfig] = useState(null);
@@ -32,6 +32,7 @@ export default function ConfigMenu() {
         try {
             const updatedConfig = await saveConfig(form)
             setConfig(updatedConfig);
+            onChanged();
             setOpen(false);
         } catch (err) {
             alert("Erreur de sauvegarde:" + err.message);
@@ -42,10 +43,10 @@ export default function ConfigMenu() {
     
     return (
         <> 
-            <Button startIcon={<SettingsIcon />} onClick={handleOpen}></Button>
-            <Dialog open={open} onClose={handleClose}>
+            <Button startIcon={<SettingsIcon />} onClick={handleOpen}>Configuration</Button>
+            <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
                 <DialogTitle>Configuration</DialogTitle>
-                <DialogContent sx={{minWidth: 300}}>
+                <DialogContent>
                     {config && Object.entries(config).map(([key]) => (
                         <TextField key={key} label={key} name={key} value={form[key]} onChange={handleChange} margin="dense" fullWidth /> 
                     ))} 

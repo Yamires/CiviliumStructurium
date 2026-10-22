@@ -1,7 +1,9 @@
 # test_performance.py
 import time
 import pytest
-from solver import solve
+from solver import solve, calculate
+from test_rules import template
+from test_local import sections
 from filtrage import filter_sections
 
 N = 1000
@@ -38,10 +40,8 @@ def test_perf_solver():
 def test_perf_solver_piecewise():
     inputs = {"x": 5}
     mean = _measure(
-        solve,
-        "Méthode conditionnelle",
-        inputs,
-        template_path="ressource/test_dsl.yaml"
+        calculate,
+        template({"y": "Piecewise((x**2, x < 0), (x, True))"}), {}, "Test", inputs
     )
     print(f" solver (piecewise) — mean: {mean:.6f}s")
     assert mean < 0.010
@@ -53,7 +53,7 @@ def test_perf_filtrage_csv_basique():
     mean = _measure(
         filter_sections,
         values,
-        dataframe_path="ressource/test_sst12.csv"
+        rows=sections(), config={"phi": .9, "fy": 350}
     )
     print(f"filtrage(csv) — mean: {mean:.6f}s")
     assert mean < 0.030
@@ -64,7 +64,7 @@ def test_perf_integration_solve_plus_filtrage():
     inputs = {"l": 10.0, "lt": 5.0, "cv": 1.9, "cm": 1.0, "x": 5.0}
     def end_to_end():
         res = solve("Poutre simple - Charge Uniformement Distribuée", inputs)
-        filter_sections(res, dataframe_path="ressource/test_sst12.csv")
+        filter_sections(res, rows=sections(), config={"phi": .9, "fy": 350})
 
     mean = _measure(end_to_end)
     print(f" end-to-end — mean: {mean:.6f}s")

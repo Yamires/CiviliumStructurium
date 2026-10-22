@@ -1,43 +1,24 @@
-import React, { useState, useContext } from 'react';
-import { AppBar, Toolbar, Box, Button } from '@mui/material';
-import ProjectBrowser from './ProjectComponent'; 
-import { AuthContext,ProjectContext } from '../App';
+import { useContext } from 'react';
+import { AppBar, Toolbar, Box, Typography } from '@mui/material';
+import ProjectBrowser from './ProjectComponent';
+import { ProjectContext } from '../contexts';
 import ConfigMenu from './ConfigMenu';
-import { useAuth0 } from '@auth0/auth0-react';
 import ExportComponent from './ExportComponent';
+import RuleEditor from './RuleEditor';
+import DatasetImport from './DatasetImport';
+import { DEMO } from '../api/client';
 
-export default function Navbar({ onConfigClick, columns, rows, columnVisibilityModel}) {
-  const {user, idUser} = useContext(AuthContext);
-  const {selectedProjectId, setSelectedProjectId} = useContext(ProjectContext)
-  const {logout} = useAuth0();
-
-  const handleLogout = () => {
-    setSelectedProjectId(null);   
-    logout({logoutParams: { returnTo: window.location.origin }});
-  };
-
-  return (
-    <Box sx={{ flexGrow:1, background: 'transparent'}}>
-        <AppBar position="fixed" color="default" sx={{mb: 2, background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(8px)', boxShadow: 3,}} elevation={3}>
-            <Toolbar>
-                <Box sx={{flexGrow:1,}}>
-                    {user && selectedProjectId && <ProjectBrowser />}
-                </Box>
-                <Box>
-                    {user && (
-                        <>
-                            <ConfigMenu onClick={onConfigClick} />
-                            <ExportComponent columns={columns} rows={rows} defaultFileName="export.xlsx" columnVisibilityModel={columnVisibilityModel} />
-                            <Button variant="contained" color="error" onClick={handleLogout} sx={{ ml: 1 }}>
-                                Déconnexion
-                            </Button>
-                            
-                        </>
-                    )}
-                </Box>
-            </Toolbar>
-        </AppBar>
-    </Box>
-   
-  );
+export default function Navbar({ columns, rows, columnVisibilityModel, onChanged }) {
+  const { selectedProjectId } = useContext(ProjectContext);
+  return <AppBar position="fixed" color="default" sx={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)' }}>
+    <Toolbar sx={{ flexWrap: 'wrap', py: 1, gap: 1 }}>
+      <Box sx={{ flexGrow: 1 }}>{!DEMO && selectedProjectId ? <ProjectBrowser /> : <Typography component="h1" variant="h6">Civilium Structurium</Typography>}</Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <DatasetImport onChanged={onChanged} />
+        <RuleEditor onChanged={onChanged} />
+        <ConfigMenu onChanged={onChanged} />
+        {!DEMO && selectedProjectId && <ExportComponent columns={columns} rows={rows} columnVisibilityModel={columnVisibilityModel} />}
+      </Box>
+    </Toolbar>
+  </AppBar>;
 }

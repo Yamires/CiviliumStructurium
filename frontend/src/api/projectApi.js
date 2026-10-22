@@ -1,17 +1,16 @@
 
 import { request } from './client';
 
-export async function fetchProjects(userId) {
-  return request(`/api/get_projects?id_user=${encodeURIComponent(userId)}`);
+export async function fetchProjects() {
+  return request('/api/get_projects');
 }
 
-export async function createProject(idUser, formData) {
+export async function createProject(formData) {
   const body = {
     nom_projet: formData.nom_projet || '',
     description: formData.description || '',
     date: formData.date || null,        
     prepare_par: formData.prepare_par || '',
-    id_user: idUser,
   };
   return request('/api/add_project', {
     method: 'POST',

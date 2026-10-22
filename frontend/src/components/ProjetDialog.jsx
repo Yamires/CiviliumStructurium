@@ -7,14 +7,14 @@ export default function ProjetDialog({open, onClose, onConfirm}) {
     const [date, setDate] = useState('');
     const [prepare_par, setPreparePar] = useState('');
 
-    const handleConfirm = () => {
-        onConfirm({
+    const handleConfirm = async () => {
+        await onConfirm({
             nom_projet,
             description,
             date,
             prepare_par
         });
-        onClose();
+        handleClose();
     }   
 
     const handleClose = () => {
@@ -71,7 +71,7 @@ export default function ProjetDialog({open, onClose, onConfirm}) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>Annuler</Button>
-                <Button onClick={handleConfirm} variant="contained" color="primary">Créer</Button>
+                <Button onClick={handleConfirm} disabled={!nom_projet.trim()} variant="contained" color="primary">Créer</Button>
             </DialogActions>
         </Dialog>
     );

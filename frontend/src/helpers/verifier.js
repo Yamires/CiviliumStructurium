@@ -1,19 +1,9 @@
-// Fonction de vérification des contraintes mécaniques
+// Contrôles préliminaires, cohérents avec le filtrage Python et navigateur.
 export function verifier({ mf, mr, ix, i, vf, vr }) {
-
-  // Initialisation des résultats de vérification
-  let verif_mf = null;
-  let verif_vf = null;
-  let verif_i = null;
-
-  // Vérifie la contrainte de moment fléchissant (mf/mr < 1)
-  if (mf !== undefined && mr !== undefined && mr !== 0) verif_mf = mf / mr < 1;
-  // Vérifie la contrainte d'inertie (ix/i < 1)
-  if (i !== undefined && ix !== undefined && ix !== 0) verif_i = ix / i < 1;
-  // Vérifie la contrainte d'effort tranchant (vf/vr < 1)
-  if (vf !== undefined && vr !== undefined && vr !== 0) verif_vf = vf / vr < 1;
-  
-  // Retourne les résultats de vérification
-  return { verif_mf, verif_vf, verif_i };
-
+  const finite = (...values) => values.every(v => typeof v === 'number' && Number.isFinite(v));
+  return {
+    verif_mf: finite(mf, mr) && mr > 0 ? Math.abs(mf) <= mr : null,
+    verif_vf: finite(vf, vr) && vr > 0 ? Math.abs(vf) <= vr : null,
+    verif_i: finite(ix, i) && ix > 0 ? ix >= i : null,
+  };
 }

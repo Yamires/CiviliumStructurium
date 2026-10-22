@@ -1,98 +1,83 @@
 calculationOptions:
   Poutre simple - Charge Uniformement Distribuée:
-    - name: x
-      label: Au point X (m)
-    - name: l
-      label: Portée (m)
-    - name: lt
-      label: Largeuer tributaire (m)
-    - name: cv
-      label: Charge vive (kPa)
-    - name: cm
-      label: c.m. (kPa)
-
-  Poutre simple - Charge Uniforme au Centre: 
-    - name: l
-      label: l (m)
-    - name: a
-      label: a - Partie plus petite non-chargée (m)
-    - name: b
-      label: b - Partie chargée (m)
-    - name: c
-      label: c - Partie plus grande chargée (m)
-    - name: x
-      label: \@ x (m)
-    - name: x_at
-      label: Condition calcul au point x (m)
-    - name: lt
-      label: lt (m)
-    - name: cv
-      label: c.v. (kPa)
-    - name: cm
-      label: c.m. (kPa)
-
+  - name: x
+    label: Au point X (m)
+  - name: l
+    label: Portée (m)
+  - name: lt
+    label: Largeuer tributaire (m)
+  - name: cv
+    label: Charge vive (kPa)
+  - name: cm
+    label: c.m. (kPa)
+  Poutre simple - Charge Uniforme au Centre:
+  - name: l
+    label: l (m)
+  - name: a
+    label: a - Partie plus petite non-chargée (m)
+  - name: b
+    label: b - Partie chargée (m)
+  - name: c
+    label: c - Partie plus grande chargée (m)
+  - name: x
+    label: \@ x (m)
+  - name: lt
+    label: lt (m)
+  - name: cv
+    label: c.v. (kPa)
+  - name: cm
+    label: c.m. (kPa)
 resultsTemplate:
   Poutre simple - Charge Uniformement Distribuée:
-    - name: mf
-      label: M.F. (kN.m)
-    - name: mx
-      label: M.X. (kN.m)
-    - name: vf
-      label: V.F. (kN)
-    - name: vx
-      label: V.X. (kN)
-    - name: vd
-      label: V.D+L (kN)
-    - name: i
-      label: I (E6 mm^4)
-    - name: wl
-      label: W.L. (kN/m)
-
-  Poutre simple - Charge Uniforme au Centre: 
-    - name: mmax
-      label: Mmax @ x (kN.m)
-    - name: mf
-      label: M.X. (kN.m)
-    - name: vf1
-      label: V.F.1 (kN)
-    - name: vf
-      label: V.F.2 (kN)
-    - name: vd
-      label: V.D+L (kN)
-    - name: wl
-      label: W.L. (kN/m)
-   
-
+  - name: mf
+    label: M.F. (kN.m)
+  - name: mx
+    label: M.X. (kN.m)
+  - name: vf
+    label: V.F. (kN)
+  - name: vx
+    label: V.X. (kN)
+  - name: vd
+    label: V.D+L (kN)
+  - name: i
+    label: I (E6 mm^4)
+  - name: wl
+    label: W.L. (kN/m)
+  Poutre simple - Charge Uniforme au Centre:
+  - name: mf
+    label: Moment maximal (kN.m)
+  - name: mx
+    label: Moment en x (kN.m)
+  - name: vf
+    label: Effort tranchant maximal (kN)
+  - name: vx
+    label: Effort tranchant en x (kN)
+  - name: vd
+    label: Effort D+L (kN)
+  - name: wl
+    label: Charge pondérée (kN/m)
 formules:
   Poutre simple - Charge Uniformement Distribuée:
-    
-    wd_l: "(cm + cv) * lt"
-    mf: "wl * (l * l) / 8"
-    mx: "wl * x * (l - x) / 2"
-    vf: "(wl * l) / 2"
-    vx: "wl * (l/2 - x)"
-    vd: "(wd_l * l) / 2"
-    I_240: "(5 * 1000 * cv * 240 * l**3 * lt) / (384 * e)"
-    I_360: "(5 * 1000 * cv * 360 * l**3 * lt) / (384 * e)"
-    I_480: "(5 * 1000 * cv * 480 * l**3 * lt) / (384 * e)"
-    I_alt: "5 * (wd_l * 1000) * (l**4) / (384 * e * 240)"
-    i: "Max (I_240, I_360, I_480)"
-    wl: "((cv * 1.5) + (cm * 1.25)) * lt" 
-
-  
-  Poutre simple - Charge Uniforme au Centre: 
-    wl: "((cv * 1.5) + (cm * 1.25)) * lt"
-    wdl: "(cv + cm)*lt"   
-    
-    vf1: "wl*b / (2*l) * (2*c + b)"     
-    vf: "wl*b / (2*l) * (2*a + b)"     
-
-    # Effort tranchant à x (pour x > a et x < (a+b)) à travailler 
-    vd: "Piecewise((vf1 - wl * (x - a), (x > a) & (x < (a + b))), (0, True))"
-
-    # Moment max, atteint à x = a + vf1 / wl
-    mmax: "vf1 * (a + (vf1 / (2*wl)))"
-
-    # Moment fléchissant en x :
-    mf: Piecewise((vf1*x_at, x < a), (vf1*x_at - wl/2 * (x_at - a)**2, (x > a) & (x < (a+b))), (vf2*(l - x_at), x > (a+b)))
-    
+    wd_l: (cm + cv) * lt
+    mf: wl * (l * l) / 8
+    mx: wl * x * (l - x) / 2
+    vf: (wl * l) / 2
+    vx: wl * (l/2 - x)
+    vd: (wd_l * l) / 2
+    I_240: (5 * 1000 * cv * delta_1 * l**3 * lt) / (384 * e)
+    I_360: (5 * 1000 * cv * delta_2 * l**3 * lt) / (384 * e)
+    I_480: (5 * 1000 * cv * delta_3 * l**3 * lt) / (384 * e)
+    I_alt: (5 * 1000 * (cm + cv) * delta_1 * l**3 * lt) / (384 * e)
+    i: Max(I_240, I_360, I_480, I_alt)
+    wl: ((cv * 1.5) + (cm * 1.25)) * lt
+  Poutre simple - Charge Uniforme au Centre:
+    wl: ((cv * 1.5) + (cm * 1.25)) * lt
+    wdl: (cv + cm) * lt
+    vf1: wl * b * (2*c + b) / (2*l)
+    vf2: wl * b * (2*a + b) / (2*l)
+    vf: Max(vf1, vf2)
+    vd: wdl * b * Max(2*c + b, 2*a + b) / (2*l)
+    mf: vf1 * (a + vf1 / (2*wl))
+    mx: Piecewise((vf1*x, x <= a), (vf1*x - wl*(x-a)**2/2, x <= a+b), (vf2*(l-x),
+      True))
+    vx: Piecewise((vf1, x <= a), (vf1-wl*(x-a), x <= a+b), (-vf2, True))
