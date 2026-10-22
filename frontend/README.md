@@ -1,12 +1,13 @@
 # Interface Civilium Structurium
-React et MUI. Voir le README à la racine pour l'installation, le dataset et les calculs.
+Voir le [README principal](../README.md) pour l'installation locale, l'import du dataset et l'éditeur de calculs.
 
-- `npm run dev` : interface locale avec API sur le port 5050.
-- `npm run dev:demo` : calculateur dans le navigateur.
-- `npm run build` : version locale dans `dist/`.
-- `npm run build:demo` : version statique dans `dist-demo/`.
-- `npm test` : tests du moteur JavaScript et du filtrage.
-- `npm run lint` : vérification du code.
-- `npm run test:e2e` : parcours navigateur sur les deux builds (Chromium requis).
+Pour utiliser la version navigateur sur un site statique, depuis ce dossier :
 
-Le script `../scripts/verify.sh`, lancé depuis la racine, exécute tous les contrôles dans l'ordre. Les tests navigateur utilisent une base et un dataset fictif isolés.
+```bash
+npm install
+npm run build:demo
+```
+
+Publier le contenu de `dist-demo/` sur le site. La démo contient des profilés fictifs ; importer son propre dataset CISC pour utiliser ses données.
+
+Les méthodes sont conservées dans le navigateur. Le dataset importé doit être rechargé à chaque ouverture de la page.

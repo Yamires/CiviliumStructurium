@@ -1,0 +1,60 @@
+name: Local and browser validation
+
+on:
+  push:
+    branches: [tmp/local-validation, feature/local-open-source]
+  pull_request:
+    branches: [feature/local-open-source]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r backend/requirements.txt
+          if [ -f frontend/package-lock.json ]; then
+            npm --prefix frontend ci
+          else
+            npm --prefix frontend install
+          fi
+      - name: Save dependency lockfile
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-lockfile
+          path: frontend/package-lock.json
+          if-no-files-found: error
+      - name: Install browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Validate both versions
+        run: ./scripts/verify.sh
+      - name: Check dependencies
+        run: npm --prefix frontend audit --audit-level=high
+      - name: Save builds
+        uses: actions/upload-artifact@v7
+        with:
+          name: application-builds
+          path: |
+            frontend/dist/
+            frontend/dist-demo/
+          if-no-files-found: error
